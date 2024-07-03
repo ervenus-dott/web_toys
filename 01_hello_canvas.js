@@ -2,6 +2,8 @@
 
 window.onload = startup;
 var canvas = document.getElementById("toy-canvas");
+var tuningFork = document.getElementById("tuning-fork");
+var goatSneeze = document.getElementById("goat-sneeze");
 var ctx = canvas.getContext("2d");
 
 var ballX = 400;
@@ -18,6 +20,7 @@ var rectangles = [{
 	colorOn: 'hsl(95, 100%, 80%)',
 	colorOff: 'hsl(95, 100%, 50%)',
 	active: false,
+	audio: tuningFork,
 }, {
 	name: 'B',
 	x: 150,
@@ -63,6 +66,7 @@ var rectangles = [{
 	colorOn: 'hsl(290, 100%, 80%)',
 	colorOff: 'hsl(290, 100%, 50%)',
 	active: false,
+	audio: goatSneeze,
 }];
 var isCircleInRect = function (rect) {
 	if (
@@ -142,6 +146,14 @@ function handleRectUpdate(rect) {
 	if (rect.active !== isColliding) {
 		console.log(`rectangle ${rect.name}'s state has changed!`, isColliding);
 		rect.active = isColliding;
+		if (rect.audio) {
+			//console.log('what is audio?', rect.audio);
+			if (rect.active) {
+				rect.audio.play();
+			} else {
+				rect.audio.pause();
+			}
+		}
 	}
 }
 //I intend to make squares so that when they are hovered over they do something more specifically they play a sound
