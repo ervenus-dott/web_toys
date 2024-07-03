@@ -9,7 +9,7 @@ var ballY = 400;
 var ballRadius = 40;
 var mouseX = 0;
 var mouseY = 0;
-var rectA = {
+var rectangles = [{
 	name: 'A',
 	x: 270,
 	y: 200,
@@ -18,8 +18,7 @@ var rectA = {
 	colorOn: 'hsl(95, 100%, 80%)',
 	colorOff: 'hsl(95, 100%, 50%)',
 	active: false,
-};
-var rectB = {
+}, {
 	name: 'B',
 	x: 150,
 	y: 95,
@@ -28,8 +27,7 @@ var rectB = {
 	colorOn: 'hsl(210, 100%, 80%)',
 	colorOff: 'hsl(210, 100%, 50%)',
 	active: false,
-};
-var rectC = {
+}, {
 	name: 'C',
 	x: 185,
 	y: 25,
@@ -38,8 +36,7 @@ var rectC = {
 	colorOn: 'hsl(60, 100%, 80%)',
 	colorOff: 'hsl(60, 100%, 50%)',
 	active: false,
-};
-var rectD = {
+}, {
 	name: 'D',
 	x: 120,
 	y: 200,
@@ -48,8 +45,7 @@ var rectD = {
 	colorOn: 'hsl(30, 100%, 80%)',
 	colorOff: 'hsl(30, 100%, 50%)',
 	active: false,
-};
-var rectE = {
+}, {
 	name: 'E',
 	x: 58,
 	y: 55,
@@ -58,8 +54,17 @@ var rectE = {
 	colorOn: 'hsl(0, 100%, 80%)',
 	colorOff: 'hsl(0, 100%, 50%)',
 	active: false,
-};
-var isCircleInRect = function(rect){
+}, {
+	name: 'F',
+	x: 408,
+	y: 105,
+	width: 69,
+	height: 240,
+	colorOn: 'hsl(290, 100%, 80%)',
+	colorOff: 'hsl(290, 100%, 50%)',
+	active: false,
+}];
+var isCircleInRect = function (rect) {
 	if (
 		(ballX + ballRadius) > rect.x &&
 		(ballY + ballRadius) > rect.y &&
@@ -92,7 +97,7 @@ function mouseMove(mouseMoveEvent) {
 	mouseX = mouseMoveEvent.clientX - canvasRect.x;
 	mouseY = mouseMoveEvent.clientY - canvasRect.y;
 }
-function drawRect(rect, color){
+function drawRect(rect, color) {
 	ctx.fillStyle = color;
 	ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
 }
@@ -124,11 +129,7 @@ function moveBall() {
 	ctx.strokeStyle = "red";
 	ctx.stroke();
 
-	handleRectUpdate(rectA);
-	handleRectUpdate(rectB);
-	handleRectUpdate(rectC);
-	handleRectUpdate(rectD);
-	handleRectUpdate(rectE);
+	rectangles.forEach(handleRectUpdate);
 }
 
 
@@ -136,7 +137,7 @@ function handleRectUpdate(rect) {
 	const isColliding = isCircleInRect(rect);
 	const rectColor = isColliding ? rect.colorOn : rect.colorOff;
 	drawRect(rect, rectColor);
-	if (rect.active !== isColliding){
+	if (rect.active !== isColliding) {
 		console.log(`rectangle ${rect.name} state has changed!`, isColliding);
 		rect.active = isColliding;
 	}
