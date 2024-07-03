@@ -10,44 +10,54 @@ var ballRadius = 40;
 var mouseX = 0;
 var mouseY = 0;
 var rectA = {
+	name: 'A',
 	x: 270,
 	y: 200,
 	width: 100,
 	height: 50,
 	colorOn: 'hsl(95, 100%, 80%)',
 	colorOff: 'hsl(95, 100%, 50%)',
+	active: false,
 };
 var rectB = {
+	name: 'B',
 	x: 150,
 	y: 95,
 	width: 50,
 	height: 100,
 	colorOn: 'hsl(210, 100%, 80%)',
 	colorOff: 'hsl(210, 100%, 50%)',
+	active: false,
 };
 var rectC = {
+	name: 'C',
 	x: 185,
 	y: 25,
 	width: 60,
 	height: 50,
 	colorOn: 'hsl(60, 100%, 80%)',
 	colorOff: 'hsl(60, 100%, 50%)',
+	active: false,
 };
 var rectD = {
+	name: 'D',
 	x: 120,
 	y: 200,
 	width: 70,
 	height: 60,
 	colorOn: 'hsl(30, 100%, 80%)',
 	colorOff: 'hsl(30, 100%, 50%)',
+	active: false,
 };
 var rectE = {
+	name: 'E',
 	x: 58,
 	y: 55,
 	width: 50,
 	height: 19,
 	colorOn: 'hsl(0, 100%, 80%)',
 	colorOff: 'hsl(0, 100%, 50%)',
+	active: false,
 };
 var isCircleInRect = function(rect){
 	if (
@@ -56,7 +66,6 @@ var isCircleInRect = function(rect){
 		(ballX - ballRadius) < rect.x + rect.width &&
 		(ballY - ballRadius) < rect.y + rect.height
 	) {
-		console.log('Success');
 		return true;
 	}
 	return false;
@@ -124,9 +133,13 @@ function moveBall() {
 
 
 function handleRectUpdate(rect) {
-	const isCircleInRectA = isCircleInRect(rect);
-	const rectColor = isCircleInRectA ? rect.colorOn : rect.colorOff;
+	const isColliding = isCircleInRect(rect);
+	const rectColor = isColliding ? rect.colorOn : rect.colorOff;
 	drawRect(rect, rectColor);
+	if (rect.active !== isColliding){
+		console.log(`rectangle ${rect.name} state has changed!`, isColliding);
+		rect.active = isColliding;
+	}
 }
 //I intend to make squares so that when they are hovered over they do something more specifically they play a sound
 
