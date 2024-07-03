@@ -6,7 +6,7 @@ var ctx = canvas.getContext("2d");
 
 var ballX = 400;
 var ballY = 400;
-var ballRadius = 40;
+var ballRadius = 20;
 var mouseX = 0;
 var mouseY = 0;
 var rectangles = [{
@@ -121,24 +121,26 @@ function moveBall() {
 
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+	rectangles.forEach(handleRectUpdate);
+
 	ctx.beginPath();
 	ctx.arc(ballX, ballY, ballRadius, 0, 2 * Math.PI);
-	ctx.fillStyle = "green";
+	ctx.fillStyle = 'hsla(25, 100%, 60%, 0.5)';
 	ctx.fill();
 	ctx.lineWidth = 5;
-	ctx.strokeStyle = "red";
+	ctx.strokeStyle = 'hsl(25, 100%, 60%)';
 	ctx.stroke();
-
-	rectangles.forEach(handleRectUpdate);
 }
 
 
 function handleRectUpdate(rect) {
+	rect.x += Math.random() - 0.5;
+	rect.y += Math.random() - 0.5;
 	const isColliding = isCircleInRect(rect);
 	const rectColor = isColliding ? rect.colorOn : rect.colorOff;
 	drawRect(rect, rectColor);
 	if (rect.active !== isColliding) {
-		console.log(`rectangle ${rect.name} state has changed!`, isColliding);
+		console.log(`rectangle ${rect.name}'s state has changed!`, isColliding);
 		rect.active = isColliding;
 	}
 }
