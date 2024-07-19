@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello Canvas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div>
+            <button id="start-audio-context-button">start audio context</button>
+        </div>
+        <div class="canvas-holder">
+            <canvas
+                id="toy-canvas"
+                width="512"
+                height="384"
+            ></canvas>
+        </div>
+        <audio 
+            src="tuning_fork_a4_440hz.mp3" 
+            id="tuning-fork"
+            controls
+            loop
+        ></audio>
+        <audio 
+            src="goat_sneeze.mp3" 
+            id="goat-sneeze"
+            controls
+            loop
+        ></audio>
+        <audio 
+            src="eeeee.mp3" 
+            id="eeeee"
+            controls
+            loop
+        ></audio>
+        <audio 
+            src="https://root.nuclearpixel.com/music/acceptable_in_the_80s.mp3" 
+            id="acceptable_in_the_80s"
+            controls
+            crossorigin="anonymous"
+            loop
+        ></audio>
+        <h1>move your mouse!</h1>
+    </div>
+    <script src="02_hello_audio.js"></script>
+</body>
+</html>
