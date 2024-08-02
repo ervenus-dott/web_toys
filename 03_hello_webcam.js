@@ -285,6 +285,28 @@ var renderBlobsBounds = function(blobs){
 	}
 };
 
+var circleRadius = 1/8;
+var circleSpacing = 1/3;
+var tau = Math.PI * 2;
+var circleStrokeWidth = 1/32;
+var renderInteractionCircles = function(count){
+    var smallerAxis = Math.min(width, height);
+    //console.log('what is smallerAxis', smallerAxis);
+    var centerX = width/2;
+    var centerY = height/2;
+    context.save();
+    context.translate(centerX, centerY);
+    context.globalCompositeOperation = 'source-over';
+
+    context.beginPath();
+    context.arc(0, 0, smallerAxis * circleRadius, 0, tau);
+    context.strokeStyle = '#ccc';
+    context.lineWidth = smallerAxis * circleStrokeWidth;
+    context.stroke();
+
+    context.restore();
+}
+
 var vsyncLoop = function(){
     requestAnimationFrame(vsyncLoop);
     const start = Date.now();
@@ -297,6 +319,7 @@ var vsyncLoop = function(){
     context.drawImage(video, 0, 0, width, height);
     var blobs = detectBlobs();
     renderBlobsBounds(blobs);
+    renderInteractionCircles(8);
     var end = Date.now();
 	inputTime.value = end - start;
 };
