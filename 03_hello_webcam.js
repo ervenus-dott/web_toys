@@ -38,7 +38,7 @@ var handleGapInput = (event) => {
 inputGapNumber.addEventListener("input", handleGapInput);
 inputGap.addEventListener("input", handleGapInput);
 
-var threshold = 100;
+var threshold = 520;
 var handleThreshholdInput = (event) => {
 	var value = event.target.value * 1 || 0;
 	threshold = value;
@@ -58,7 +58,7 @@ var handleSizeInput = (event) => {
 inputSizeNumber.addEventListener("input", handleSizeInput);
 inputSize.addEventListener("input", handleSizeInput);
 
-var invertVideoFeed = false;
+var invertVideoFeed = true;
 var handleInvertInput = (event) => {
     //console.log('what is checked event', event);
 	var value = event.target.checked;
@@ -285,11 +285,11 @@ var renderBlobsBounds = function(blobs){
 	}
 };
 
-var circleRadius = 1/8;
+var circleRadius = 1/9;
 var circleSpacing = 1/3;
 var tau = Math.PI * 2;
 var circleStrokeWidth = 1/32;
-var renderInteractionCircles = function(count){
+var renderInteractionCircles = function(count, blobs){
     var smallerAxis = Math.min(width, height);
     //console.log('what is smallerAxis', smallerAxis);
     var centerX = width/2;
@@ -298,14 +298,32 @@ var renderInteractionCircles = function(count){
     context.translate(centerX, centerY);
     context.globalCompositeOperation = 'source-over';
 
-    context.beginPath();
-    context.arc(0, 0, smallerAxis * circleRadius, 0, tau);
-    context.strokeStyle = '#ccc';
-    context.lineWidth = smallerAxis * circleStrokeWidth;
-    context.stroke();
+    var radialFraction = tau / count;
+    var circleDistance = smallerAxis * circleSpacing;
+    var circlePixelRadius = smallerAxis * circleRadius;
+    for (let index = 0; index < count; index++) {
+        var angle = index * radialFraction;
+        var x = Math.cos(angle) * circleDistance;
+        var y = Math.sin(angle) * circleDistance;
+        var wasHit = false;
+        for (let blobIndex = 0; blobIndex < blobs.length; blobIndex++) {
+            var blob = blobs[blobIndex];
+            var diffX = blob.centroid[0] - (x + centerX);
+            var diffY = blob.centroid[1] - (y + centerY);
+            var distance = Math.sqrt((diffX ** 2) + (diffY ** 2));
+            if (distance < circlePixelRadius) {
+                wasHit = true;
+            };
+        }
+        context.beginPath();
+        context.arc(x, y, circlePixelRadius, 0, tau);
+        context.strokeStyle = wasHit ? '#fff' : '#0008';
+        context.lineWidth = smallerAxis * circleStrokeWidth;
+        context.stroke();
+    }
 
     context.restore();
-}
+};
 
 var vsyncLoop = function(){
     requestAnimationFrame(vsyncLoop);
@@ -319,7 +337,7 @@ var vsyncLoop = function(){
     context.drawImage(video, 0, 0, width, height);
     var blobs = detectBlobs();
     renderBlobsBounds(blobs);
-    renderInteractionCircles(8);
+    renderInteractionCircles(8, blobs);
     var end = Date.now();
 	inputTime.value = end - start;
 };
