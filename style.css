@@ -45,8 +45,10 @@ button:active {
 input {
 	background-color: #333;
 }
-.canvas-holder video {
+.canvas-holder video, 
+.canvas-holder canvas {
 	/* display: block; */
+	min-width: 512px;
 	max-width: 512px;
 }
 
