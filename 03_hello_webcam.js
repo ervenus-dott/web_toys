@@ -12,15 +12,15 @@ var inputSize = document.getElementById("input-size");
 var inputInvert = document.getElementById("input-invert");
 var inputTime = document.getElementById("input-time");
 var context = canvas.getContext("2d", { willReadFrequently: true });
-var {width, height} = canvas;
+var { width, height } = canvas;
 
 const handleWidthInput = (event) => {
-    //console.log('what is event?', event);
+	//console.log('what is event?', event);
 	var value = event.target.value * 1 || 64;
 	width = value;
-    height = Math.floor((width / 16) * 9);
+	height = Math.floor((width / 16) * 9);
 	canvas.width = width;
-    canvas.height = height;
+	canvas.height = height;
 	inputWidth.value = value;
 	inputWidthNumber.value = value;
 	// handleResize();
@@ -28,7 +28,7 @@ const handleWidthInput = (event) => {
 inputWidthNumber.addEventListener("input", handleWidthInput);
 inputWidth.addEventListener("input", handleWidthInput);
 
-var maxPixelGap = 3;
+var maxPixelGap = inputGapNumber.value * 1 || 0;
 var handleGapInput = (event) => {
 	var value = event.target.value * 1 || 0;
 	maxPixelGap = value;
@@ -38,7 +38,7 @@ var handleGapInput = (event) => {
 inputGapNumber.addEventListener("input", handleGapInput);
 inputGap.addEventListener("input", handleGapInput);
 
-var threshold = 520;
+var threshold = inputThresholdNumber.value * 1 || 0;
 var handleThreshholdInput = (event) => {
 	var value = event.target.value * 1 || 0;
 	threshold = value;
@@ -48,7 +48,7 @@ var handleThreshholdInput = (event) => {
 inputThresholdNumber.addEventListener("input", handleThreshholdInput);
 inputThreshold.addEventListener("input", handleThreshholdInput);
 
-var minBlobSize = 100;
+var minBlobSize = inputSizeNumber.value * 1 || 0;
 var handleSizeInput = (event) => {
 	var value = event.target.value * 1 || 0;
 	minBlobSize = value;
@@ -58,9 +58,9 @@ var handleSizeInput = (event) => {
 inputSizeNumber.addEventListener("input", handleSizeInput);
 inputSize.addEventListener("input", handleSizeInput);
 
-var invertVideoFeed = true;
+var invertVideoFeed = inputInvert.checked;
 var handleInvertInput = (event) => {
-    //console.log('what is checked event', event);
+	//console.log('what is checked event', event);
 	var value = event.target.checked;
 	invertVideoFeed = value;
 };
@@ -68,35 +68,27 @@ inputInvert.addEventListener("input", handleInvertInput);
 
 // This is what gets our webcam input feed.
 
-if (
-    navigator.mediaDevices &&
-    navigator.mediaDevices.getUserMedia
-) {
-    var constraints = {
-        video: {
-            width: 1280,
-            height: 720,
-            facingMode: 'user'
-        }
-    };
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+	var constraints = {
+		video: {
+			width: 1280,
+			height: 720,
+			facingMode: "user",
+		},
+	};
 
-    navigator.mediaDevices.getUserMedia(constraints)
-        .then(function (stream) {
-            // apply the stream to the video element used in the texture
-            video.srcObject = stream;
-            video.play();
-        })
-        .catch(function (error) {
-            console.error(
-                'Unable to access the camera/webcam.',
-                error
-            );
-        });
-
+	navigator.mediaDevices
+		.getUserMedia(constraints)
+		.then(function (stream) {
+			// apply the stream to the video element used in the texture
+			video.srcObject = stream;
+			video.play();
+		})
+		.catch(function (error) {
+			console.error("Unable to access the camera/webcam.", error);
+		});
 } else {
-
-    console.error('MediaDevices interface not available.');
-
+	console.error("MediaDevices interface not available.");
 }
 
 const uniqueColors = [
@@ -222,8 +214,8 @@ const getBlobForPixel = (membership, blobs, x, y) => {
 	}
 };
 
-var detectBlobs = function(){
-    var imageData = context.getImageData(0, 0, width, height);
+var detectBlobs = function () {
+	var imageData = context.getImageData(0, 0, width, height);
 	var data = imageData.data;
 	var membership = new Uint32Array(width * height);
 	var blobs = [];
@@ -240,11 +232,11 @@ var detectBlobs = function(){
 		}
 	}
 	context.putImageData(imageData, 0, 0);
-    return blobs;
+	return blobs;
 };
 
-var renderBlobsBounds = function(blobs){
-    // console.log("blobs", blobs);
+var renderBlobsBounds = function (blobs) {
+	// console.log("blobs", blobs);
 	context.globalCompositeOperation = "difference";
 	context.strokeStyle = "#fff";
 	context.lineWidth = 2;
@@ -285,60 +277,99 @@ var renderBlobsBounds = function(blobs){
 	}
 };
 
-var circleRadius = 1/9;
-var circleSpacing = 1/3;
-var tau = Math.PI * 2;
-var circleStrokeWidth = 1/32;
-var renderInteractionCircles = function(count, blobs){
-    var smallerAxis = Math.min(width, height);
-    //console.log('what is smallerAxis', smallerAxis);
-    var centerX = width/2;
-    var centerY = height/2;
-    context.save();
-    context.translate(centerX, centerY);
-    context.globalCompositeOperation = 'source-over';
+var soundPaths = [
+	"/chords/a_major_7th.mp3",
+	"/chords/b_major_7th.mp3",
+	"/chords/c_sharp_minor_7th.mp3",
+	"/chords/e_major_7th.mp3",
+];
+var soundBlobUrls = [];
+var loadAudioDataBuffer = function (path) {
+	return fetch(path)
+		.then(function (request) {
+			console.log("what is request?", request);
+			return request.blob();
+		})
+		.then(function (blob) {
+			return URL.createObjectURL(blob);
+		});
+};
+var soundBlobUrlPromises = soundPaths.map(loadAudioDataBuffer);
 
-    var radialFraction = tau / count;
-    var circleDistance = smallerAxis * circleSpacing;
-    var circlePixelRadius = smallerAxis * circleRadius;
-    for (let index = 0; index < count; index++) {
-        var angle = index * radialFraction;
-        var x = Math.cos(angle) * circleDistance;
-        var y = Math.sin(angle) * circleDistance;
-        var wasHit = false;
-        for (let blobIndex = 0; blobIndex < blobs.length; blobIndex++) {
-            var blob = blobs[blobIndex];
-            var diffX = blob.centroid[0] - (x + centerX);
-            var diffY = blob.centroid[1] - (y + centerY);
-            var distance = Math.sqrt((diffX ** 2) + (diffY ** 2));
-            if (distance < circlePixelRadius) {
-                wasHit = true;
-            };
-        }
-        context.beginPath();
-        context.arc(x, y, circlePixelRadius, 0, tau);
-        context.strokeStyle = wasHit ? '#fff' : '#0008';
-        context.lineWidth = smallerAxis * circleStrokeWidth;
-        context.stroke();
-    }
+Promise.all(soundBlobUrlPromises).then(function (allTheLoadedThings) {
+	console.log("WHat is allTheLoadedThings", allTheLoadedThings);
+	soundBlobUrls = allTheLoadedThings;
+});
 
-    context.restore();
+var playSound = function (soundPath) {
+	var audio = new Audio();
+	audio.src = soundPath;
+	audio.play();
 };
 
-var vsyncLoop = function(){
-    requestAnimationFrame(vsyncLoop);
-    const start = Date.now();
-    context.globalCompositeOperation = "source-over";
+var circleRadius = 1 / 9;
+var circleSpacing = 1 / 3;
+var tau = Math.PI * 2;
+var circleStrokeWidth = 1 / 32;
+var lastInteractionStates = [];
+var renderInteractionCircles = function (count, blobs) {
+	var smallerAxis = Math.min(width, height);
+	//console.log('what is smallerAxis', smallerAxis);
+	var centerX = width / 2;
+	var centerY = height / 2;
+	context.save();
+	context.translate(centerX, centerY);
+	context.globalCompositeOperation = "source-over";
+
+	var radialFraction = tau / count;
+	var circleDistance = smallerAxis * circleSpacing;
+	var circlePixelRadius = smallerAxis * circleRadius;
+	for (let index = 0; index < count; index++) {
+		var angle = index * radialFraction;
+		var x = Math.cos(angle) * circleDistance;
+		var y = Math.sin(angle) * circleDistance;
+		var wasHitLastFrame = lastInteractionStates[index];
+		var wasHit = false;
+		for (let blobIndex = 0; blobIndex < blobs.length; blobIndex++) {
+			var blob = blobs[blobIndex];
+			if (blob.totalPixelCount < minBlobSize) {
+				continue;
+			}
+			var diffX = blob.centroid[0] - (x + centerX);
+			var diffY = blob.centroid[1] - (y + centerY);
+			var distance = Math.sqrt(diffX ** 2 + diffY ** 2);
+			if (distance < circlePixelRadius) {
+				wasHit = true;
+			}
+		}
+		if (!wasHitLastFrame && wasHit) {
+			playSound(soundBlobUrls[index % soundBlobUrls.length]);
+		}
+		lastInteractionStates[index] = wasHit;
+		context.beginPath();
+		context.arc(x, y, circlePixelRadius, 0, tau);
+		context.strokeStyle = wasHit ? "#fff" : "#0008";
+		context.lineWidth = smallerAxis * circleStrokeWidth;
+		context.stroke();
+	}
+
+	context.restore();
+};
+
+var vsyncLoop = function () {
+	requestAnimationFrame(vsyncLoop);
+	const start = Date.now();
+	context.globalCompositeOperation = "source-over";
 	context.fillStyle = "#fff";
 	context.fillRect(0, 0, width, height);
 	if (invertVideoFeed) {
 		context.globalCompositeOperation = "difference";
 	}
-    context.drawImage(video, 0, 0, width, height);
-    var blobs = detectBlobs();
-    renderBlobsBounds(blobs);
-    renderInteractionCircles(8, blobs);
-    var end = Date.now();
+	context.drawImage(video, 0, 0, width, height);
+	var blobs = detectBlobs();
+	renderBlobsBounds(blobs);
+	renderInteractionCircles(8, blobs);
+	var end = Date.now();
 	inputTime.value = end - start;
 };
 
