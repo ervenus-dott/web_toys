@@ -1,17 +1,17 @@
-var canvas = document.getElementById("toy-canvas");
-var video = document.getElementById("stream-video");
-var startWebcamButton = document.getElementById("start-webcam-button");
-var inputWidthNumber = document.getElementById("input-width-number");
-var inputWidth = document.getElementById("input-width");
-var inputGapNumber = document.getElementById("input-gap-number");
-var inputGap = document.getElementById("input-gap");
-var inputThresholdNumber = document.getElementById("input-threshold-number");
-var inputThreshold = document.getElementById("input-threshold");
-var inputSizeNumber = document.getElementById("input-size-number");
-var inputSize = document.getElementById("input-size");
-var inputInvert = document.getElementById("input-invert");
-var inputTime = document.getElementById("input-time");
-var context = canvas.getContext("2d", { willReadFrequently: true });
+var canvas = document.getElementById('toy-canvas');
+var video = document.getElementById('stream-video');
+var startWebcamButton = document.getElementById('start-webcam-button');
+var inputWidthNumber = document.getElementById('input-width-number');
+var inputWidth = document.getElementById('input-width');
+var inputGapNumber = document.getElementById('input-gap-number');
+var inputGap = document.getElementById('input-gap');
+var inputThresholdNumber = document.getElementById('input-threshold-number');
+var inputThreshold = document.getElementById('input-threshold');
+var inputSizeNumber = document.getElementById('input-size-number');
+var inputSize = document.getElementById('input-size');
+var inputInvert = document.getElementById('input-invert');
+var inputTime = document.getElementById('input-time');
+var context = canvas.getContext('2d', { willReadFrequently: true });
 var { width, height } = canvas;
 
 const handleWidthInput = (event) => {
@@ -25,8 +25,8 @@ const handleWidthInput = (event) => {
 	inputWidthNumber.value = value;
 	// handleResize();
 };
-inputWidthNumber.addEventListener("input", handleWidthInput);
-inputWidth.addEventListener("input", handleWidthInput);
+inputWidthNumber.addEventListener('input', handleWidthInput);
+inputWidth.addEventListener('input', handleWidthInput);
 
 var maxPixelGap = inputGapNumber.value * 1 || 0;
 var handleGapInput = (event) => {
@@ -35,8 +35,8 @@ var handleGapInput = (event) => {
 	inputGap.value = value;
 	inputGapNumber.value = value;
 };
-inputGapNumber.addEventListener("input", handleGapInput);
-inputGap.addEventListener("input", handleGapInput);
+inputGapNumber.addEventListener('input', handleGapInput);
+inputGap.addEventListener('input', handleGapInput);
 
 var threshold = inputThresholdNumber.value * 1 || 0;
 var handleThreshholdInput = (event) => {
@@ -45,8 +45,8 @@ var handleThreshholdInput = (event) => {
 	inputThreshold.value = value;
 	inputThresholdNumber.value = value;
 };
-inputThresholdNumber.addEventListener("input", handleThreshholdInput);
-inputThreshold.addEventListener("input", handleThreshholdInput);
+inputThresholdNumber.addEventListener('input', handleThreshholdInput);
+inputThreshold.addEventListener('input', handleThreshholdInput);
 
 var minBlobSize = inputSizeNumber.value * 1 || 0;
 var handleSizeInput = (event) => {
@@ -55,8 +55,8 @@ var handleSizeInput = (event) => {
 	inputSize.value = value;
 	inputSizeNumber.value = value;
 };
-inputSizeNumber.addEventListener("input", handleSizeInput);
-inputSize.addEventListener("input", handleSizeInput);
+inputSizeNumber.addEventListener('input', handleSizeInput);
+inputSize.addEventListener('input', handleSizeInput);
 
 var invertVideoFeed = inputInvert.checked;
 var handleInvertInput = (event) => {
@@ -64,7 +64,7 @@ var handleInvertInput = (event) => {
 	var value = event.target.checked;
 	invertVideoFeed = value;
 };
-inputInvert.addEventListener("input", handleInvertInput);
+inputInvert.addEventListener('input', handleInvertInput);
 
 // This is what gets our webcam input feed.
 
@@ -73,7 +73,7 @@ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
 		video: {
 			width: 1280,
 			height: 720,
-			facingMode: "user",
+			facingMode: 'user',
 		},
 	};
 
@@ -85,10 +85,10 @@ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
 			video.play();
 		})
 		.catch(function (error) {
-			console.error("Unable to access the camera/webcam.", error);
+			console.error('Unable to access the camera/webcam.', error);
 		});
 } else {
-	console.error("MediaDevices interface not available.");
+	console.error('MediaDevices interface not available.');
 }
 
 const uniqueColors = [
@@ -236,9 +236,9 @@ var detectBlobs = function () {
 };
 
 var renderBlobsBounds = function (blobs) {
-	// console.log("blobs", blobs);
-	context.globalCompositeOperation = "difference";
-	context.strokeStyle = "#fff";
+	// console.log('blobs', blobs);
+	context.globalCompositeOperation = 'difference';
+	context.strokeStyle = '#fff';
 	context.lineWidth = 2;
 	const centroidSize = 4;
 	for (let i = 0; i < blobs.length; i++) {
@@ -278,16 +278,21 @@ var renderBlobsBounds = function (blobs) {
 };
 
 var soundPaths = [
-	"/chords/a_major_7th.mp3",
-	"/chords/b_major_7th.mp3",
-	"/chords/c_sharp_minor_7th.mp3",
-	"/chords/e_major_7th.mp3",
+	'/chords/a_major_7th.mp3',
+	'/chords/b_major_7th.mp3',
+	'/chords/c_sharp_minor_7th.mp3',
+	'/chords/e_major_7th.mp3',
+    '/chords/a_major_short.mp3',
+    '/chords/b_major_short.mp3',
+    '/chords/c_sharp_minor_short.mp3',
+    '/chords/e_major_short.mp3',
+    
 ];
 var soundBlobUrls = [];
 var loadAudioDataBuffer = function (path) {
 	return fetch(path)
 		.then(function (request) {
-			console.log("what is request?", request);
+			console.log('what is request?', request);
 			return request.blob();
 		})
 		.then(function (blob) {
@@ -297,7 +302,7 @@ var loadAudioDataBuffer = function (path) {
 var soundBlobUrlPromises = soundPaths.map(loadAudioDataBuffer);
 
 Promise.all(soundBlobUrlPromises).then(function (allTheLoadedThings) {
-	console.log("WHat is allTheLoadedThings", allTheLoadedThings);
+	console.log('WHat is allTheLoadedThings', allTheLoadedThings);
 	soundBlobUrls = allTheLoadedThings;
 });
 
@@ -319,7 +324,7 @@ var renderInteractionCircles = function (count, blobs) {
 	var centerY = height / 2;
 	context.save();
 	context.translate(centerX, centerY);
-	context.globalCompositeOperation = "source-over";
+	context.globalCompositeOperation = 'source-over';
 
 	var radialFraction = tau / count;
 	var circleDistance = smallerAxis * circleSpacing;
@@ -348,7 +353,7 @@ var renderInteractionCircles = function (count, blobs) {
 		lastInteractionStates[index] = wasHit;
 		context.beginPath();
 		context.arc(x, y, circlePixelRadius, 0, tau);
-		context.strokeStyle = wasHit ? "#fff" : "#0008";
+		context.strokeStyle = wasHit ? '#fff' : '#0008';
 		context.lineWidth = smallerAxis * circleStrokeWidth;
 		context.stroke();
 	}
@@ -359,11 +364,11 @@ var renderInteractionCircles = function (count, blobs) {
 var vsyncLoop = function () {
 	requestAnimationFrame(vsyncLoop);
 	const start = Date.now();
-	context.globalCompositeOperation = "source-over";
-	context.fillStyle = "#fff";
+	context.globalCompositeOperation = 'source-over';
+	context.fillStyle = '#fff';
 	context.fillRect(0, 0, width, height);
 	if (invertVideoFeed) {
-		context.globalCompositeOperation = "difference";
+		context.globalCompositeOperation = 'difference';
 	}
 	context.drawImage(video, 0, 0, width, height);
 	var blobs = detectBlobs();
