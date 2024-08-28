@@ -1,6 +1,5 @@
 var canvas = document.getElementById('toy-canvas');
 var video = document.getElementById('stream-video');
-var startWebcamButton = document.getElementById('start-webcam-button');
 var inputWidthNumber = document.getElementById('input-width-number');
 var inputWidth = document.getElementById('input-width');
 var inputGapNumber = document.getElementById('input-gap-number');
