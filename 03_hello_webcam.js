@@ -1,12 +1,12 @@
 var soundPaths = [
-	'/chords/a_major_7th.mp3',
-	'/chords/b_major_7th.mp3',
-	'/chords/c_sharp_minor_7th.mp3',
-	'/chords/e_major_7th.mp3',
-    '/chords/a_major_short.mp3',
-    '/chords/b_major_short.mp3',
-    '/chords/c_sharp_minor_short.mp3',
-    '/chords/e_major_short.mp3',
+	'chords/a_major_7th.mp3',
+	'chords/b_major_7th.mp3',
+	'chords/c_sharp_minor_7th.mp3',
+	'chords/e_major_7th.mp3',
+    'chords/a_major_short.mp3',
+    'chords/b_major_short.mp3',
+    'chords/c_sharp_minor_short.mp3',
+    'chords/e_major_short.mp3',
 ];
 var soundBlobUrls = [];
 var loadAudioDataBuffer = function (path) {
