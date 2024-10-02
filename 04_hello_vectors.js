@@ -200,22 +200,32 @@ var drawCircle = (vert, radius, color) => {
     context.fill();
 };
 
-var scaleyDo = glMatrix.mat3.create();
-var translation = glMatrix.vec2.fromValues(256, 144);
-glMatrix.mat3.translate(scaleyDo, scaleyDo, translation);
-glMatrix.mat3.scale(scaleyDo, scaleyDo, [100, 100]);
+var transforms = glMatrix.mat3.create();
+var vsyncLoop = (time) => {
+    requestAnimationFrame(vsyncLoop);
+    var seconds = time / 1000;
+    var goatRotation = seconds / 7 * tau;
+    var bearRotation = seconds / 2 * -tau;
 
-goaticornVerts.forEach((vert, index) => {
-    var transformedVert = glMatrix.vec2.create();
-    glMatrix.vec2.transformMat3(transformedVert, vert, scaleyDo);
-    drawCircle(transformedVert, 2, `hsl(${index * 10 % 360}, 75%, 50%)`);
-})
+    context.fillStyle = '#000';
+    context.fillRect(0, 0, canvas.width, canvas.height);
 
-glMatrix.mat3.translate(scaleyDo, glMatrix.mat3.create(), [125, 144]);
-glMatrix.mat3.scale(scaleyDo, scaleyDo, [20, 20]);
+    glMatrix.mat3.translate(transforms, glMatrix.mat3.create(), [256, 144]);
+    glMatrix.mat3.rotate(transforms, transforms, goatRotation);
+    glMatrix.mat3.scale(transforms, transforms, [100, 100]);
+    goaticornVerts.forEach((vert, index) => {
+        var transformedVert = glMatrix.vec2.create();
+        glMatrix.vec2.transformMat3(transformedVert, vert, transforms);
+        drawCircle(transformedVert, 2, `hsl(${index * 10 % 360}, 75%, 50%)`);
+    })
 
-bearVerts.forEach((vert, index) => {
-    var transformedVert = glMatrix.vec2.create();
-    glMatrix.vec2.transformMat3(transformedVert, vert, scaleyDo);
-    drawCircle(transformedVert, 2, `hsl(${index * 10 % 360}, 75%, 50%)`);
-})
+    glMatrix.mat3.translate(transforms, glMatrix.mat3.create(), [125, 144]);
+    glMatrix.mat3.rotate(transforms, transforms, bearRotation);
+    glMatrix.mat3.scale(transforms, transforms, [20, 20]);
+    bearVerts.forEach((vert, index) => {
+        var transformedVert = glMatrix.vec2.create();
+        glMatrix.vec2.transformMat3(transformedVert, vert, transforms);
+        drawCircle(transformedVert, 2, `hsl(${index * 10 % 360}, 75%, 50%)`);
+    })
+}
+requestAnimationFrame(vsyncLoop);
