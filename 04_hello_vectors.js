@@ -93,8 +93,8 @@ var translation = glMatrix.vec2.fromValues(256, 144);
 glMatrix.mat3.translate(scaleyDo, scaleyDo, translation);
 glMatrix.mat3.scale(scaleyDo, scaleyDo, [100, 100]);
 
-goaticornVerts.forEach((vert) => {
+goaticornVerts.forEach((vert, index) => {
     var transformedVert = glMatrix.vec2.create();
     glMatrix.vec2.transformMat3(transformedVert, vert, scaleyDo);
-    drawCircle(transformedVert, 2, '#66f');
+    drawCircle(transformedVert, 2, `hsl(${index * 10 % 360}, 75%, 50%)`);
 })
