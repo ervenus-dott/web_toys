@@ -1,9 +1,11 @@
 var enemyVerts = [];
 var goaticornVerts = [];
+var goaticornLines = [];
 
 loadObjPath('./unicorn-goat.obj').then(function (obj) {
     enemyVerts = obj.enemy_1.points;
     goaticornVerts = obj.goaticorn.points;
+    goaticornLines = obj.goaticorn.lines;
 });
 
 var bearVerts = [
@@ -127,8 +129,18 @@ var drawCircle = (vert, radius, color) => {
     context.fillStyle = color;
     context.fill();
 };
+var drawLine = (a, b, color) => {
+    context.beginPath();
+    context.moveTo(a[0], a[1]);
+    context.lineTo(b[0], b[1]);
+    context.strokeStyle = color;
+    context.lineWidth = 3;
+    context.stroke();
+};
 
 var transforms = glMatrix.mat3.create();
+var identity = glMatrix.mat3.create();
+var transformedVert = glMatrix.vec2.create();
 var vsyncLoop = (time) => {
     requestAnimationFrame(vsyncLoop);
     var seconds = time / 1000;
@@ -138,30 +150,34 @@ var vsyncLoop = (time) => {
     context.fillStyle = '#000';
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    glMatrix.mat3.translate(transforms, glMatrix.mat3.create(), [256, 144]);
+    glMatrix.mat3.translate(transforms, identity, [256, 144]);
     glMatrix.mat3.rotate(transforms, transforms, goatRotation);
     glMatrix.mat3.scale(transforms, transforms, [100, 100]);
-    goaticornVerts.forEach((vert, index) => {
-        var transformedVert = glMatrix.vec2.create();
+    var transformedGoaticornVerts = goaticornVerts.map((vert, index) => {
         glMatrix.vec2.transformMat3(transformedVert, vert, transforms);
         drawCircle(transformedVert, 2, `hsl(${index * 10 % 360}, 75%, 50%)`);
-    })
+        return [...transformedVert];
+    });
+    // console.log('what is transformedGoaticornVerts', transformedGoaticornVerts);
+    goaticornLines.forEach((indeces)=>{
+        var pointA = transformedGoaticornVerts[indeces[0]];
+        var pointB = transformedGoaticornVerts[indeces[1]];
+        drawLine(pointA, pointB, '#999');
+    });
 
-    glMatrix.mat3.translate(transforms, glMatrix.mat3.create(), [80, 144]);
+    glMatrix.mat3.translate(transforms, identity, [80, 144]);
     glMatrix.mat3.rotate(transforms, transforms, bearRotation);
     glMatrix.mat3.scale(transforms, transforms, [20, 20]);
     bearVerts.forEach((vert, index) => {
-        var transformedVert = glMatrix.vec2.create();
         glMatrix.vec2.transformMat3(transformedVert, vert, transforms);
         drawCircle(transformedVert, 2, `hsl(${index * 10 % 360}, 75%, 50%)`);
-    })
+    });
 
 
-    glMatrix.mat3.translate(transforms, glMatrix.mat3.create(), [420, 144]);
+    glMatrix.mat3.translate(transforms, identity, [420, 144]);
     glMatrix.mat3.rotate(transforms, transforms, bearRotation);
     glMatrix.mat3.scale(transforms, transforms, [80, 80]);
     enemyVerts.forEach((vert, index) => {
-        var transformedVert = glMatrix.vec2.create();
         glMatrix.vec2.transformMat3(transformedVert, vert, transforms);
         drawCircle(transformedVert, 2, `hsl(${index * 10 % 360}, 75%, 50%)`);
     })

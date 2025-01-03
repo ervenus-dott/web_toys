@@ -1,15 +1,16 @@
 var loadObjPath = async function (path) {
     var response = await fetch(path);
+    // console.log('what is response?', response);
     var text = await response.text();
-    //console.log('what is text?', text);
+    // console.log('what is text?', text);
     return parseObjText(text);
 };
 
 var parseObjText = function(text) {
-    // TODO: o instruction should start a new object
-    // TODO: v instruction should create a new vertex and track its index
+    // Done: o instruction should start a new object
+    // Done: v instruction should create a new vertex and track its index
     // TODO: l instruction should add a new line with corrected vertex indeces
-    // TODO: Return an object map of named objects
+    // Done: Return an object map of named objects
 
     var result = {};
     var badNewLineRegex = /\r/g;
@@ -17,6 +18,7 @@ var parseObjText = function(text) {
     var lines = text.trim().replace(badNewLineRegex, '').split('\n');
     // console.log('what is lines?', lines);
     var currentObject;
+    var vertexOffset = 1;
     lines.forEach(function (line){
         var split = line.trim().split(allWhitespaceRegex);
         //console.log('what is split', split)
@@ -25,6 +27,7 @@ var parseObjText = function(text) {
             var name = split.shift();
             currentObject = {
                 name,
+                vertexOffset,
                 points:[],
                 lines:[],
             };
@@ -35,6 +38,12 @@ var parseObjText = function(text) {
             var z = split.shift() * 1;
             var point = [x, y, z];
             currentObject.points.push(point);
+            vertexOffset += 1;
+        } else if (instruction === 'l') {
+            var a = (split.shift() * 1) - currentObject.vertexOffset;
+            var b = (split.shift() * 1) - currentObject.vertexOffset;
+            var line = [a, b];
+            currentObject.lines.push(line);
         } else {
             console.warn('unkown instruction!', instruction);
         }
