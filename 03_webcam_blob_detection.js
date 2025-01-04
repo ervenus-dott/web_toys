@@ -37,6 +37,12 @@ var webcamHTML = `
 		</div>
 		<div class="form-field">
 			<label>
+				<span>Flip video feed X:</span>
+				<input type="checkbox" id="input-flip-x" checked>
+			</label>
+		</div>
+		<div class="form-field">
+			<label>
 				<span>Last frame compute time:</span>
 				<input type="number" id="input-time" disabled="">
 			</label>
@@ -66,6 +72,7 @@ var inputThreshold = document.getElementById('input-threshold');
 var inputSizeNumber = document.getElementById('input-size-number');
 var inputSize = document.getElementById('input-size');
 var inputInvert = document.getElementById('input-invert');
+var inputFlipX = document.getElementById('input-flip-x');
 var inputTime = document.getElementById('input-time');
 var context = canvas.getContext('2d', { willReadFrequently: true });
 var { width, height } = canvas;
@@ -121,6 +128,16 @@ var handleInvertInput = (event) => {
 	invertVideoFeed = value;
 };
 inputInvert.addEventListener('input', handleInvertInput);
+
+var flipVideoX = inputFlipX.checked;
+var handleFlipXInput = (event) => {
+	//console.log('what is checked event', event);
+	var value = event.target.checked;
+	flipVideoX = value;
+	video.style.transform = flipVideoX ? 'scale(-1, 1)' : null
+};
+inputFlipX.addEventListener('input', handleFlipXInput);
+video.style.transform = flipVideoX ? 'scale(-1, 1)' : null
 
 // This is what gets our webcam input feed.
 
@@ -390,7 +407,15 @@ var vsyncLoop = function () {
 	if (invertVideoFeed) {
 		context.globalCompositeOperation = 'difference';
 	}
-	context.drawImage(video, 0, 0, width, height);
+	if (flipVideoX) {
+		context.save();
+		context.translate(width, 0);
+		context.scale(-1, 1);
+		context.drawImage(video, 0, 0, width, height);
+		context.restore();
+	} else {
+		context.drawImage(video, 0, 0, width, height);
+	}
 	var blobs = detectBlobs();
 	renderBlobsBounds(blobs);
 	renderInteractionCircles(8, blobs);
