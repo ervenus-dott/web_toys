@@ -1,9 +1,11 @@
 var enemyVerts = [];
+var enemyLines = [];
 var goaticornVerts = [];
 var goaticornLines = [];
 
 loadObjPath('./unicorn-goat.obj').then(function (obj) {
     enemyVerts = obj.enemy_1.points;
+    enemyLines = obj.enemy_1.lines;
     goaticornVerts = obj.goaticorn.points;
     goaticornLines = obj.goaticorn.lines;
 });
@@ -164,6 +166,24 @@ var vsyncLoop = (time) => {
         var pointB = transformedGoaticornVerts[indeces[1]];
         drawLine(pointA, pointB, '#999');
     });
+    glMatrix.mat3.translate(transforms, identity, [420, 144]);
+    glMatrix.mat3.rotate(transforms, transforms, bearRotation);
+    glMatrix.mat3.scale(transforms, transforms, [80, 80]);
+    enemyVerts.forEach((vert, index) => {
+        glMatrix.vec2.transformMat3(transformedVert, vert, transforms);
+        drawCircle(transformedVert, 2, `hsl(${index * 10 % 360}, 75%, 50%)`);
+    })
+    var transformedEnemyVerts = enemyVerts.map((vert, index) => {
+        glMatrix.vec2.transformMat3(transformedVert, vert, transforms);
+        drawCircle(transformedVert, 2, `hsl(${index * 10 % 360}, 75%, 50%)`);
+        return [...transformedVert];
+    });
+    // console.log('what is transformedGoaticornVerts', transformedGoaticornVerts);
+    enemyLines.forEach((indeces)=>{
+        var pointA = transformedEnemyVerts[indeces[0]];
+        var pointB = transformedEnemyVerts[indeces[1]];
+        drawLine(pointA, pointB, '#999');
+    });
 
     glMatrix.mat3.translate(transforms, identity, [80, 144]);
     glMatrix.mat3.rotate(transforms, transforms, bearRotation);
@@ -174,12 +194,5 @@ var vsyncLoop = (time) => {
     });
 
 
-    glMatrix.mat3.translate(transforms, identity, [420, 144]);
-    glMatrix.mat3.rotate(transforms, transforms, bearRotation);
-    glMatrix.mat3.scale(transforms, transforms, [80, 80]);
-    enemyVerts.forEach((vert, index) => {
-        glMatrix.vec2.transformMat3(transformedVert, vert, transforms);
-        drawCircle(transformedVert, 2, `hsl(${index * 10 % 360}, 75%, 50%)`);
-    })
 }
 requestAnimationFrame(vsyncLoop);
