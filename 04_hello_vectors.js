@@ -20,7 +20,7 @@ var goaticorn = {
     lines: [],
     position: [256, 144],
     rotation: 0,
-    scale: [100, 100],
+    scale: [50, 50],
     velocity: [0, 0],
     lineColor: '#842',
 };
@@ -296,6 +296,18 @@ var vsyncLoop = (time) => {
         lazer.position,
         lazer.velocity,
     );
+
+    var enemySize = 50;
+    if (
+        lazer.position[0] > enemy.position[0] - enemySize &&
+        lazer.position[0] < enemy.position[0] + enemySize &&
+        lazer.position[1] > enemy.position[1] - enemySize &&
+        lazer.position[1] < enemy.position[1] + enemySize
+    ) {
+        enemy.lineColor = '#F00';
+    } else {
+        delete enemy.lineColor;
+    }
 
     renderGameObject(goaticorn);
     renderGameObject(bear);
