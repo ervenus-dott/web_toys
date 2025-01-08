@@ -41,6 +41,16 @@ loadObjPath('./unicorn-goat.obj').then(function (obj) {
     lazer.lines = obj.enemy_1_lazer.lines;
 });
 
+var soundPaths = [
+    'sfx/fire_sound_effect.mp3',
+    'sfx/hit_sound_effect.mp3',
+];
+var playSound = function (soundPath) {
+	var audio = new Audio();
+	audio.src = soundPath;
+	audio.play();
+};
+
 bear.verts = [
     [0.256251, 0.229275],
     [0.204999, 0.002696],
@@ -181,6 +191,7 @@ var shootLazer = (speed) => {
 canvas.addEventListener('mousedown', function(mouseEvent){
     mouseEvent.preventDefault();
     shootLazer(4);
+    playSound(soundPaths[0]);
 })
 
 var goaticornRotationSpeed = 7
@@ -211,6 +222,7 @@ var handleKeyDownEvent = (keyEvent) => {
         enemy.velocity[0] = -speed;
     } else if (keyEvent.code === 'Space') {
         shootLazer(speed);
+        playSound(soundPaths[0])
     }
 };
 window.addEventListener('keydown', handleKeyDownEvent);
@@ -310,6 +322,7 @@ var vsyncLoop = (time) => {
         enemy.lineColor = '#F00';
         score += 1;
         scoreHolder.innerText = score;
+        playSound(soundPaths[1])
     } else {
         delete enemy.lineColor;
     }
