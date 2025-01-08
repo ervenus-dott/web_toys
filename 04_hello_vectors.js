@@ -154,6 +154,27 @@ var handleMouseMoveEvent = (mouseEvent) => {
 };
 canvas.addEventListener('mousemove', handleMouseMoveEvent);
 
+var goaticornRotationSpeed = 7
+var handleKeyDownEvent = (keyEvent) => {
+    console.log('what is keyEvent', keyEvent);
+    if (keyEvent.code === 'KeyW') {
+        goaticorn.position[1] -= 10;
+    } else if (keyEvent.code === 'KeyD') {
+        goaticorn.position[0] += 10;
+    } else if (keyEvent.code === 'KeyS') {
+        goaticorn.position[1] += 10;
+    } else if (keyEvent.code === 'KeyA') {
+        goaticorn.position[0] -= 10;
+    }else if (keyEvent.code === 'Space') {
+        goaticorn.scale = [20, 20];
+    } else if (keyEvent.code === 'KeyR') {
+        goaticorn.scale = [100, 100];
+    } else if (keyEvent.code === 'KeyX') {
+        goaticornRotationSpeed *= -1;
+    }
+};
+window.addEventListener('keydown', handleKeyDownEvent);
+
 var context = canvas.getContext('2d');
 var tau = Math.PI * 2;
 var drawCircle = (vert, radius, color) => {
@@ -195,7 +216,7 @@ var renderGameObject = ({verts, lines, position, rotation, scale}) => {
 var vsyncLoop = (time) => {
     requestAnimationFrame(vsyncLoop);
     var seconds = time / 1000;
-    goaticorn.rotation = seconds / 7 * tau;
+    goaticorn.rotation = seconds / goaticornRotationSpeed * tau;
     bear.rotation = seconds / 2 * -tau;
     enemy.rotation = seconds / 2 * tau;
 
