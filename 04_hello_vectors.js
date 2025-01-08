@@ -20,7 +20,6 @@ var bear = {
     scale: [20, 20],
 };
 
-
 loadObjPath('./unicorn-goat.obj').then(function (obj) {
     enemy.verts = obj.enemy_1.points;
     enemy.lines = obj.enemy_1.lines;
@@ -141,6 +140,20 @@ bear.verts = [
 ];
 
 var canvas = document.getElementById("toy-canvas");
+
+var handleMouseMoveEvent = (mouseEvent) => {
+    // compensate for difference between canvas coordinate and event coordinate
+    var rect = mouseEvent.target.getBoundingClientRect();
+    var difference = {
+        x: mouseEvent.clientX - rect.x,
+        y: mouseEvent.clientY - rect.y,
+    };
+    // console.log('what is difference', difference);
+    goaticorn.position[0] = difference.x;
+    goaticorn.position[1] = difference.y;
+};
+canvas.addEventListener('mousemove', handleMouseMoveEvent);
+
 var context = canvas.getContext('2d');
 var tau = Math.PI * 2;
 var drawCircle = (vert, radius, color) => {
