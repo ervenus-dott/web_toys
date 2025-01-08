@@ -44,6 +44,7 @@ loadObjPath('./unicorn-goat.obj').then(function (obj) {
 var soundPaths = [
     'sfx/fire_sound_effect.mp3',
     'sfx/hit_sound_effect.mp3',
+    'sfx/oof.mp3',
 ];
 var playSound = function (soundPath) {
 	var audio = new Audio();
@@ -285,7 +286,17 @@ var renderGameObject = ({verts, lines, position, rotation, scale, lineColor}) =>
         drawCircle(vert, 2, `hsl(${index * 10 % 360}, 75%, 50%)`);
     });
 }
-
+var detectBoxHit = (projectile, target, boxSize) => {
+    if (
+        projectile.position[0] > target.position[0] - boxSize &&
+        projectile.position[0] < target.position[0] + boxSize &&
+        projectile.position[1] > target.position[1] - boxSize &&
+        projectile.position[1] < target.position[1] + boxSize
+    ) {
+        return true;
+    }
+    return false;
+}
 var vsyncLoop = (time) => {
     requestAnimationFrame(vsyncLoop);
     var seconds = time / 1000;
@@ -312,20 +323,20 @@ var vsyncLoop = (time) => {
         lazer.velocity,
     );
 
-    var enemySize = 50;
-    if (
-        lazer.position[0] > enemy.position[0] - enemySize &&
-        lazer.position[0] < enemy.position[0] + enemySize &&
-        lazer.position[1] > enemy.position[1] - enemySize &&
-        lazer.position[1] < enemy.position[1] + enemySize
-    ) {
+    if (detectBoxHit(lazer, enemy, 50)) {
         enemy.lineColor = '#F00';
         score += 1;
         scoreHolder.innerText = score;
-        playSound(soundPaths[1])
+        playSound(soundPaths[1]);
     } else {
         delete enemy.lineColor;
-    }
+    };
+    if (detectBoxHit(lazer, bear, 60)) {
+        score -= 1;
+        scoreHolder.innerText = score;
+        playSound(soundPaths[2]);
+    };
+    
 
     renderGameObject(goaticorn);
     renderGameObject(bear);
@@ -333,5 +344,7 @@ var vsyncLoop = (time) => {
     renderGameObject(lazer);
 }
 requestAnimationFrame(vsyncLoop);
+
+
 
 
