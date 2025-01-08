@@ -11,6 +11,7 @@ var goaticorn = {
     position: [256, 144],
     rotation: 0,
     scale: [100, 100],
+    velocity: [0, 0],
 };
 var bear = {
     verts: [],
@@ -156,15 +157,16 @@ canvas.addEventListener('mousemove', handleMouseMoveEvent);
 
 var goaticornRotationSpeed = 7
 var handleKeyDownEvent = (keyEvent) => {
+    var speed = 3;
     console.log('what is keyEvent', keyEvent);
     if (keyEvent.code === 'KeyW') {
-        goaticorn.position[1] -= 10;
+        goaticorn.velocity[1] = -speed;
     } else if (keyEvent.code === 'KeyD') {
-        goaticorn.position[0] += 10;
+        goaticorn.velocity[0] = speed;
     } else if (keyEvent.code === 'KeyS') {
-        goaticorn.position[1] += 10;
+        goaticorn.velocity[1] = speed;
     } else if (keyEvent.code === 'KeyA') {
-        goaticorn.position[0] -= 10;
+        goaticorn.velocity[0] = -speed;
     }else if (keyEvent.code === 'Space') {
         goaticorn.scale = [20, 20];
     } else if (keyEvent.code === 'KeyR') {
@@ -174,6 +176,19 @@ var handleKeyDownEvent = (keyEvent) => {
     }
 };
 window.addEventListener('keydown', handleKeyDownEvent);
+
+var handleKeyUpEvent = (keyEvent) => {
+    if (keyEvent.code === 'KeyW') {
+        goaticorn.velocity[1] = 0;
+    } else if (keyEvent.code === 'KeyD') {
+        goaticorn.velocity[0] = 0;
+    } else if (keyEvent.code === 'KeyS') {
+        goaticorn.velocity[1] = 0;
+    } else if (keyEvent.code === 'KeyA') {
+        goaticorn.velocity[0] = 0;
+    }
+};
+window.addEventListener('keyup', handleKeyUpEvent);
 
 var context = canvas.getContext('2d');
 var tau = Math.PI * 2;
@@ -222,6 +237,12 @@ var vsyncLoop = (time) => {
 
     context.fillStyle = '#000';
     context.fillRect(0, 0, canvas.width, canvas.height);
+
+    glMatrix.vec2.add(
+        goaticorn.position,
+        goaticorn.position,
+        goaticorn.velocity,
+    );
 
     renderGameObject(goaticorn);
     renderGameObject(bear);
