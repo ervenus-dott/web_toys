@@ -168,10 +168,22 @@ var handleMouseMoveEvent = (mouseEvent) => {
 };
 canvas.addEventListener('mousemove', handleMouseMoveEvent);
 
+var shootLazer = (speed) => {
+    lazer.position[0] = goaticorn.position[0];
+    lazer.position[1] = goaticorn.position[1];
+    lazer.rotation = goaticorn.rotation;
+    var rotation = goaticorn.rotation + (tau / -4);
+    lazer.velocity[0] = Math.cos(rotation) * speed * 3;
+    lazer.velocity[1] = Math.sin(rotation) * speed * 3;
+};
+canvas.addEventListener('mousedown', function(){
+    shootLazer(4);
+})
+
 var goaticornRotationSpeed = 7
 var handleKeyDownEvent = (keyEvent) => {
     var speed = 3;
-    console.log('what is keyEvent', keyEvent);
+    // console.log('what is keyEvent', keyEvent);
     if (keyEvent.code === 'KeyW') {
         goaticorn.velocity[1] = -speed;
     } else if (keyEvent.code === 'KeyD') {
@@ -180,8 +192,8 @@ var handleKeyDownEvent = (keyEvent) => {
         goaticorn.velocity[1] = speed;
     } else if (keyEvent.code === 'KeyA') {
         goaticorn.velocity[0] = -speed;
-    }else if (keyEvent.code === 'Space') {
-        goaticorn.scale = [20, 20];
+    }else if (keyEvent.code === 'KeyE') {
+        goaticorn.scale = [50, 50];
     } else if (keyEvent.code === 'KeyR') {
         goaticorn.scale = [100, 100];
     } else if (keyEvent.code === 'KeyX') {
@@ -194,13 +206,8 @@ var handleKeyDownEvent = (keyEvent) => {
         enemy.velocity[1] = speed;
     } else if (keyEvent.code === 'ArrowLeft') {
         enemy.velocity[0] = -speed;
-    } else if (keyEvent.code === 'Numpad0') {
-        lazer.position[0] = goaticorn.position[0];
-        lazer.position[1] = goaticorn.position[1];
-        lazer.rotation = goaticorn.rotation;
-        var rotation = goaticorn.rotation + (tau / -4);
-        lazer.velocity[0] = Math.cos(rotation) * speed * 3;
-        lazer.velocity[1] = Math.sin(rotation) * speed * 3;
+    } else if (keyEvent.code === 'Space') {
+        shootLazer(speed);
     }
 };
 window.addEventListener('keydown', handleKeyDownEvent);
@@ -296,4 +303,5 @@ var vsyncLoop = (time) => {
     renderGameObject(lazer);
 }
 requestAnimationFrame(vsyncLoop);
+
 
