@@ -6,6 +6,15 @@ var enemy = {
     scale: [80, 80],
     velocity: [0, 0],
 };
+var lazer = {
+    verts: [],
+    lines: [],
+    position: [420, 144],
+    rotation: 0,
+    scale: [80, 80],
+    velocity: [0, 0],
+    lineColor: '#F00',
+};
 var goaticorn = {
     verts: [],
     lines: [],
@@ -13,6 +22,7 @@ var goaticorn = {
     rotation: 0,
     scale: [100, 100],
     velocity: [0, 0],
+    lineColor: '#842',
 };
 var bear = {
     verts: [],
@@ -27,6 +37,8 @@ loadObjPath('./unicorn-goat.obj').then(function (obj) {
     enemy.lines = obj.enemy_1.lines;
     goaticorn.verts = obj.goaticorn.points;
     goaticorn.lines = obj.goaticorn.lines;
+    lazer.verts = obj.enemy_1_lazer.points;
+    lazer.lines = obj.enemy_1_lazer.lines;
 });
 
 bear.verts = [
@@ -159,7 +171,7 @@ canvas.addEventListener('mousemove', handleMouseMoveEvent);
 var goaticornRotationSpeed = 7
 var handleKeyDownEvent = (keyEvent) => {
     var speed = 3;
-    // console.log('what is keyEvent', keyEvent);
+    console.log('what is keyEvent', keyEvent);
     if (keyEvent.code === 'KeyW') {
         goaticorn.velocity[1] = -speed;
     } else if (keyEvent.code === 'KeyD') {
@@ -182,6 +194,13 @@ var handleKeyDownEvent = (keyEvent) => {
         enemy.velocity[1] = speed;
     } else if (keyEvent.code === 'ArrowLeft') {
         enemy.velocity[0] = -speed;
+    } else if (keyEvent.code === 'Numpad0') {
+        lazer.position[0] = goaticorn.position[0];
+        lazer.position[1] = goaticorn.position[1];
+        lazer.rotation = goaticorn.rotation;
+        var rotation = goaticorn.rotation + (tau / -4);
+        lazer.velocity[0] = Math.cos(rotation) * speed * 3;
+        lazer.velocity[1] = Math.sin(rotation) * speed * 3;
     }
 };
 window.addEventListener('keydown', handleKeyDownEvent);
@@ -227,7 +246,7 @@ var drawLine = (a, b, color) => {
 var transforms = glMatrix.mat3.create();
 var identity = glMatrix.mat3.create();
 var transformedVert = glMatrix.vec2.create();
-var renderGameObject = ({verts, lines, position, rotation, scale}) => {
+var renderGameObject = ({verts, lines, position, rotation, scale, lineColor}) => {
     glMatrix.mat3.translate(transforms, identity, position);
     glMatrix.mat3.rotate(transforms, transforms, rotation);
     glMatrix.mat3.scale(transforms, transforms, scale);
@@ -238,7 +257,7 @@ var renderGameObject = ({verts, lines, position, rotation, scale}) => {
     lines.forEach((indeces) => {
         var pointA = transformedVerts[indeces[0]];
         var pointB = transformedVerts[indeces[1]];
-        drawLine(pointA, pointB, '#999');
+        drawLine(pointA, pointB, lineColor || '#999');
     });
     transformedVerts.forEach((vert, index) => {
         drawCircle(vert, 2, `hsl(${index * 10 % 360}, 75%, 50%)`);
@@ -265,10 +284,16 @@ var vsyncLoop = (time) => {
         enemy.position,
         enemy.velocity,
     );
+    glMatrix.vec2.add(
+        lazer.position,
+        lazer.position,
+        lazer.velocity,
+    );
 
     renderGameObject(goaticorn);
     renderGameObject(bear);
     renderGameObject(enemy);
+    renderGameObject(lazer);
 }
 requestAnimationFrame(vsyncLoop);
 
