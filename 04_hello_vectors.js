@@ -9,7 +9,7 @@ var enemy = {
 var lazer = {
     verts: [],
     lines: [],
-    position: [420, 144],
+    position: [-420, -144],
     rotation: 0,
     scale: [80, 80],
     velocity: [0, 0],
@@ -154,6 +154,8 @@ bear.verts = [
 ];
 
 var canvas = document.getElementById("toy-canvas");
+var scoreHolder = document.getElementById("score-holder");
+var score = 0;
 
 var handleMouseMoveEvent = (mouseEvent) => {
     // compensate for difference between canvas coordinate and event coordinate
@@ -176,7 +178,8 @@ var shootLazer = (speed) => {
     lazer.velocity[0] = Math.cos(rotation) * speed * 3;
     lazer.velocity[1] = Math.sin(rotation) * speed * 3;
 };
-canvas.addEventListener('mousedown', function(){
+canvas.addEventListener('mousedown', function(mouseEvent){
+    mouseEvent.preventDefault();
     shootLazer(4);
 })
 
@@ -305,6 +308,8 @@ var vsyncLoop = (time) => {
         lazer.position[1] < enemy.position[1] + enemySize
     ) {
         enemy.lineColor = '#F00';
+        score += 1;
+        scoreHolder.innerText = score;
     } else {
         delete enemy.lineColor;
     }
