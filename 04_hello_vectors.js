@@ -167,6 +167,10 @@ bear.verts = [
 var canvas = document.getElementById("toy-canvas");
 var scoreHolder = document.getElementById("score-holder");
 var score = 0;
+var enemyHPHolder = document.getElementById("enemy-HP-holder");
+var enemyHP = 100;
+var bearHPHolder = document.getElementById("bear-HP-holder");
+var bearHP = 100;
 
 var handleMouseMoveEvent = (mouseEvent) => {
     // compensate for difference between canvas coordinate and event coordinate
@@ -327,6 +331,8 @@ var vsyncLoop = (time) => {
         enemy.lineColor = '#F00';
         score += 1;
         scoreHolder.innerText = score;
+        enemyHP -= 1;
+        enemyHPHolder.innerText = enemyHP;
         playSound(soundPaths[1]);
     } else {
         delete enemy.lineColor;
@@ -334,6 +340,8 @@ var vsyncLoop = (time) => {
     if (detectBoxHit(lazer, bear, 60)) {
         score -= 1;
         scoreHolder.innerText = score;
+        bearHP -= 1;
+        bearHPHolder.innerText = bearHP;
         playSound(soundPaths[2]);
     };
     
