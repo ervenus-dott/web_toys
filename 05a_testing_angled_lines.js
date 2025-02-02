@@ -24,6 +24,16 @@ var arrowObj = {
 };
 var arrowObj2 = {
     angle: 360,
+    startX: 70,
+    startY: 310,
+    length: 7,
+    arrowLength: 2,
+    arrowWidth: 2,
+    color: 'white',
+};
+var createdAngle = 34;
+var arrowObj3 = {
+    angle: createdAngle,
     startX: 310,
     startY: 70,
     length: 85,
@@ -107,3 +117,7 @@ var drawAngledArrow = function({startX, startY, angle, length, arrowWidth, arrow
 
 drawAngledArrow(arrowObj);
 drawAngledArrow(arrowObj2);
+arrowObj3.angle = 21;
+drawAngledArrow(arrowObj3);
+
+

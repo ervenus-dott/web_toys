@@ -10,7 +10,7 @@ var drawCircle = (vert, radius, color) => {
     context.fillStyle = color;
     context.fill();
 };
-var backgroundFillRect = (vert, radius, color) => {
+var backgroundFillRect = () => {
     context.fillStyle = "green";
     context.fillRect(20, 10, 150, 100);
 };
@@ -35,6 +35,16 @@ var drawGrid = function(cellSpacing) {
             var color = `hsl(0 0 ${value * 100}%)`;
             drawCircle([x, y], settings.circleRadius, color);
             // console.log('what is x and y', x, y);
+            
+            arrowObj2.startX = x;
+            arrowObj2.startY = y;
+            // console.log('what is value', value);
+            arrowObj2.angle = value * 360;
+            arrowObj2.length = settings.circleRadius;
+            arrowObj2.color = 'blue';
+            drawAngledArrow(arrowObj2);
+
+
         }    
     }
 };
