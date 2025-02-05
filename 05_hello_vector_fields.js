@@ -16,7 +16,7 @@ var backgroundFillRect = () => {
 };
 
 var settings = {
-    circleRadius: 2,
+    circleRadius: 10,
     cellSpacing: 20,
     startOffset: 16,
     endOffset: 10,
@@ -24,42 +24,52 @@ var settings = {
     perlin_amp_falloff: 0.5,
     scale: 1 / 25,
     backgroundOpacity: 255,
-}
-
-var drawGrid = function(cellSpacing) {
-    // var startOffset = cellSpacing / 1.5;
-    // var endOffset = cellSpacing / 1.1;
-    var perlinDiff = perlinMax - perlinMin;
-    for (let y = settings.startOffset; y < canvas.height; y += cellSpacing) {
-        for (let x = settings.startOffset; x < canvas.width - settings.endOffset; x += cellSpacing) {
-            var rawValue = noise(x * settings.scale, y * settings.scale);
-            var value = (rawValue - perlinMin) / perlinDiff;
-            var color = `hsl(0 0 ${value * 100}%)`;
-            drawCircle([x, y], settings.circleRadius, color);
-            // console.log('what is x and y', x, y);
-            
-            drawAngledArrow({
-                startX: x,
-                startY: y,
-                angle: value * tau,
-                length: settings.circleRadius,
-                arrowLength: 2,
-                arrowWidth: 2,            
-                color: 'blue',
-            });
-
-
-        }    
-    }
+    speed: 1,
 };
 
-drawGrid(settings.cellSpacing)
-var gui = new lil.GUI()
+var createGridOfPoints = function(cellSpacing) {
+    // var startOffset = cellSpacing / 1.5;
+    // var endOffset = cellSpacing / 1.1;
+    var points = [];
+    for (let y = settings.startOffset; y < canvas.height; y += cellSpacing) {
+        for (let x = settings.startOffset; x < canvas.width - settings.endOffset; x += cellSpacing) {
+            points.push([x, y]);
+        }    
+    }
+    return points;
+};
+
+var samplePerlinAtPoint = function(point) {
+    var x = point[0];
+    var y = point[1];
+    var rawValue = noise(x * settings.scale, y * settings.scale);
+    var perlinDiff = perlinMax - perlinMin;
+    var value = (rawValue - perlinMin) / perlinDiff;
+    // console.log('what is x and y', x, y);
+    point[2] = value * tau;
+    point[3] = `hsl(0 0 ${value * 100}%)`;
+};
+var renderPoint = function(point) {
+    // drawCircle(point, settings.circleRadius, point[3]);
+    drawAngledArrow({
+        startX: point[0],
+        startY: point[1],
+        angle: point[2],
+        length: settings.circleRadius,
+        arrowLength: 2,
+        arrowWidth: 2,            
+        color: 'blue',
+    });
+};
+
+var points = createGridOfPoints(settings.cellSpacing);
+var gui = new lil.GUI();
 
 gui.add(settings, 'cellSpacing', 2, 40, 1/500);
 gui.add(settings, 'startOffset', 1, 10, 1/500);
 gui.add(settings, 'endOffset', 1, 10, 1/500);
 gui.add(settings, 'circleRadius', 1, 10, 1/500);
+gui.add(settings, 'speed', 0.1, 100, 0.1);
 // gui.onChange(function(){
 //     context.fillStyle = "black";
 //     context.fillRect(0, 0, canvas.width, canvas.height);
@@ -109,10 +119,42 @@ gui.onChange(function(){
     if(settings.backgroundOpacity) {
         perlinRerender()
     };
-    drawGrid(settings.cellSpacing);
+    points = createGridOfPoints(settings.cellSpacing);
+    points.forEach(samplePerlinAtPoint);
+    points.forEach(renderPoint);
     renderPerformanceStats(start);
 })
-
+var wiggle = function(delta) {
+    var flowPoint = function(point) {
+        point[0] += Math.cos(point[2]) * delta * settings.speed;
+        point[1] += Math.sin(point[2]) * delta * settings.speed;
+        if (point[0] < 0) {
+            point[0] = canvas.width
+        }
+        else if (point[0] > canvas.width) {
+            point[0] = 0
+        }
+        if (point[1] < 0) {
+            point[1] = canvas.height
+        }
+        else if (point[1] > canvas.height) {
+            point[1] = 0
+        }
+    };    
+    points.forEach(samplePerlinAtPoint);
+    points.forEach(flowPoint); 
+    points.forEach(renderPoint); 
+}
+var lastTime = 0;
+var animate = function(time) {
+    requestAnimationFrame(animate);
+    context.fillStyle = `#0001`
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    var delta = (time - lastTime) / 1000;
+    wiggle(delta);
+    lastTime = time;
+}
+requestAnimationFrame(animate)
 
 function renderPerformanceStats(start) {
     var end = Date.now();
