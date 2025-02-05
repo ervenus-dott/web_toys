@@ -36,13 +36,15 @@ var drawGrid = function(cellSpacing) {
             drawCircle([x, y], settings.circleRadius, color);
             // console.log('what is x and y', x, y);
             
-            arrowObj2.startX = x;
-            arrowObj2.startY = y;
-            // console.log('what is value', value);
-            arrowObj2.angle = value * 360;
-            arrowObj2.length = settings.circleRadius;
-            arrowObj2.color = 'blue';
-            drawAngledArrow(arrowObj2);
+            drawAngledArrow({
+                startX: x,
+                startY: y,
+                angle: value * 360,
+                length: settings.circleRadius,
+                arrowLength: 2,
+                arrowWidth: 2,            
+                color: 'blue',
+            });
 
 
         }    
