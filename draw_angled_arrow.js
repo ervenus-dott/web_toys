@@ -14,18 +14,19 @@ var drawAngledLine = function (angle, startX, startY, lineLength) {
     // console.log('what angle is angle', angle);
     // getNewCoordFromAngleAndLength(endX, endY, arrowHeadStartPointAngle, distanceFromEndOfLineEnd);
 };
+var deg = Math.PI / 180;
 var drawAngledArrow = function ({ startX, startY, angle, length, arrowWidth, arrowLength, color }) {
-    var endX = startX + Math.cos(Math.PI * angle / 180) * (length - arrowLength);
-    var endY = startY + Math.sin(Math.PI * angle / 180) * (length - arrowLength);
+    var endX = startX + Math.cos(angle) * (length - arrowLength);
+    var endY = startY + Math.sin(angle) * (length - arrowLength);
 
-    var firstArrowStartX = endX + Math.cos(Math.PI * (angle - 90) / 180) * arrowWidth;
-    var firstArrowStartY = endY + Math.sin(Math.PI * (angle - 90) / 180) * arrowWidth;
+    var firstArrowStartX = endX + Math.cos(angle - (deg * 90)) * arrowWidth;
+    var firstArrowStartY = endY + Math.sin(angle - (deg * 90)) * arrowWidth;
 
-    var firstArrowSideX = startX + Math.cos(Math.PI * angle / 180) * length;
-    var firstArrowSideY = startY + Math.sin(Math.PI * angle / 180) * length;
+    var firstArrowSideX = startX + Math.cos(angle) * length;
+    var firstArrowSideY = startY + Math.sin(angle) * length;
 
-    var secondArrowStartX = endX + Math.cos(Math.PI * (angle + 90) / 180) * arrowWidth;
-    var secondArrowStartY = endY + Math.sin(Math.PI * (angle + 90) / 180) * arrowWidth;
+    var secondArrowStartX = endX + Math.cos(angle + (deg * 90)) * arrowWidth;
+    var secondArrowStartY = endY + Math.sin(angle + (deg * 90)) * arrowWidth;
 
     // var firstArrowSideX = startX + Math.cos(Math.PI * angle / 180) * length;
     // var firstArrowSideY = startY + Math.sin(Math.PI * angle / 180) * length;
