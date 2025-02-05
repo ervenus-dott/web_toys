@@ -29,9 +29,11 @@ var settings = {
 var drawGrid = function(cellSpacing) {
     // var startOffset = cellSpacing / 1.5;
     // var endOffset = cellSpacing / 1.1;
+    var perlinDiff = perlinMax - perlinMin;
     for (let y = settings.startOffset; y < canvas.height; y += cellSpacing) {
         for (let x = settings.startOffset; x < canvas.width - settings.endOffset; x += cellSpacing) {
-            var value = Math.abs(noise(x * settings.scale, y * settings.scale));
+            var rawValue = noise(x * settings.scale, y * settings.scale);
+            var value = (rawValue - perlinMin) / perlinDiff;
             var color = `hsl(0 0 ${value * 100}%)`;
             drawCircle([x, y], settings.circleRadius, color);
             // console.log('what is x and y', x, y);
@@ -39,7 +41,7 @@ var drawGrid = function(cellSpacing) {
             drawAngledArrow({
                 startX: x,
                 startY: y,
-                angle: value * 360,
+                angle: value * tau,
                 length: settings.circleRadius,
                 arrowLength: 2,
                 arrowWidth: 2,            
@@ -69,10 +71,14 @@ gui.add(settings, 'circleRadius', 1, 10, 1/500);
 
 var image = context.createImageData(canvas.width, canvas.height);
 var data = image.data;
+var perlinMin = 0;
+var perlinMax = 0;
 var perlinRerender = function() {  
   for (var x = 0; x < canvas.width; x++) {
     for (var y = 0; y < canvas.height; y++) {
-      var value = Math.abs(noise(x * settings.scale, y * settings.scale));
+      var value = noise(x * settings.scale, y * settings.scale);
+      perlinMin = Math.min(perlinMin, value);
+      perlinMax = Math.max(perlinMax, value);
       value *= 256;
   
       var cell = (x + y * canvas.width) * 4;
@@ -98,6 +104,8 @@ gui.onChange(function(){
     context.fillStyle = "black";
     context.fillRect(0, 0, canvas.width, canvas.height);
     noiseDetail(settings.perlin_octaves, settings.perlin_amp_falloff);
+    perlinMin = 0;
+    perlinMax = 0;
     if(settings.backgroundOpacity) {
         perlinRerender()
     };
