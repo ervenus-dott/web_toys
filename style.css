@@ -72,3 +72,6 @@ input {
 .form-field label input[type="range"] {
 	width: calc(50% - 10rem);
 }
+.canvas-holder {
+	user-select: none;
+}
