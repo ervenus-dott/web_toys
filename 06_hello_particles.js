@@ -14,14 +14,18 @@ var settings = {
     drag: 0.2,
     minParticles: 3,
     maxParticles: 7,
+    minSize: 2,
+    maxSize: 20,
 };
 
 var gui = new lil.GUI();
 
-gui.add(settings, 'gravity', 2, 40, 1/500);
-gui.add(settings, 'drag', 1, 10, 1/500);
+gui.add(settings, 'gravity', 0, 40, 1/500);
+gui.add(settings, 'drag', 0, 10, 1/500);
 gui.add(settings, 'minParticles', 1, 100, 1);
 gui.add(settings, 'maxParticles', 1, 200, 1);
+gui.add(settings, 'minSize', 1, 100, 1);
+gui.add(settings, 'maxSize', 1, 200, 1);
 
 var particles = [
     {
@@ -54,25 +58,28 @@ var tickParticles = function(delta) {
         };
         var [r, g, b, a] = linearGradient(gradient, lifeFraction);
         var color = `rgba(${r * 255}, ${g * 255}, ${b * 255}, ${a})`;    
-        drawCircle(particle.position, particle.radius, color || 'white');
+        drawCircle(particle.position, particle.radius * a, color || 'white');
     })
     particles = particles.filter(function(particle){
         return ! particle.dead;
     });
 };
-
+var getValueInRange = function(min, max) {
+    var difference = max - min;
+    return min + (difference * Math.random());
+};
 canvas.addEventListener('click', function(clickEvent){
     var rect = clickEvent.target.getBoundingClientRect();
     var coords = [
         clickEvent.clientX - rect.x,
         clickEvent.clientY - rect.y
     ];
-    var difference = settings.maxParticles - settings.minParticles;
-    var particleCount = settings.minParticles + (difference * Math.random());
-    for (let i = 0; i < particleCount; i++) {        
+    var particleCount = getValueInRange(settings.minParticles, settings.maxParticles)
+    for (let i = 0; i < particleCount; i++) {
+        var radius = getValueInRange(settings.minSize, settings.maxSize);
         var particle = {
             position: coords.slice(),
-            radius: 10,
+            radius,
             velocity: [
                 (Math.random() - 0.5) * 10,
                 Math.random() * -10
