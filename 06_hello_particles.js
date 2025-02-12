@@ -12,18 +12,23 @@ var drawCircle = (vert, radius, color) => {
 var settings = {
     gravity: 9.8,
     drag: 0.2,
+    minParticles: 3,
+    maxParticles: 7,
 };
 
 var gui = new lil.GUI();
 
 gui.add(settings, 'gravity', 2, 40, 1/500);
 gui.add(settings, 'drag', 1, 10, 1/500);
+gui.add(settings, 'minParticles', 1, 100, 1);
+gui.add(settings, 'maxParticles', 1, 200, 1);
 
 var particles = [
     {
         position: [canvas.width / 2, canvas.height / 2],
         radius: 10,
         velocity: [0, 0],
+        color: 'white',
     }
 ];
 var tickParticles = function(delta) {
@@ -38,11 +43,11 @@ var tickParticles = function(delta) {
             particle.position[1] - particle.radius > canvas.height
             // particle.position[1] + particle.radius < 0
         ){
-            console.log('dead', particle);
+            // console.log('dead', particle);
             particle.dead = true;
             return;
         };
-        drawCircle(particle.position, particle.radius, 'white');
+        drawCircle(particle.position, particle.radius, particle.color || 'white');
     })
     particles = particles.filter(function(particle){
         return ! particle.dead;
@@ -55,12 +60,20 @@ canvas.addEventListener('click', function(clickEvent){
         clickEvent.clientX - rect.x,
         clickEvent.clientY - rect.y
     ];
-    var particle = {
-        position: coords,
-        radius: 10,
-        velocity: [(Math.random() - 0.5) * 10, -5],
-    };
-    particles.push(particle);
+    var difference = settings.maxParticles - settings.minParticles;
+    var particleCount = settings.minParticles + (difference * Math.random());
+    for (let i = 0; i < particleCount; i++) {        
+        var particle = {
+            position: coords.slice(),
+            radius: 10,
+            velocity: [
+                (Math.random() - 0.5) * 10,
+                Math.random() * -10
+            ],
+            color: `hsl(${Math.random() * 360} 100% 50%)`
+        };
+        particles.push(particle);
+    }
     // console.log('what is difference', coords);
 });
 
