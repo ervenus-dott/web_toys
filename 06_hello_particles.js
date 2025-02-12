@@ -29,6 +29,8 @@ var particles = [
         radius: 10,
         velocity: [0, 0],
         color: 'white',
+        lifeSpan: 100,
+        tick: 0,
     }
 ];
 var tickParticles = function(delta) {
@@ -37,17 +39,22 @@ var tickParticles = function(delta) {
         particle.velocity[0] *= 1 - (settings.drag * delta);
         particle.velocity[1] *= 1 - (settings.drag * delta);
         glMatrix.vec2.add(particle.position, particle.position, particle.velocity);
+        particle.tick += 1;
+        var lifeFraction = particle.tick / particle.lifeSpan;
         if(
             particle.position[0] - particle.radius > canvas.width ||
             particle.position[0] + particle.radius < 0 ||
-            particle.position[1] - particle.radius > canvas.height
+            particle.position[1] - particle.radius > canvas.height ||
+            lifeFraction > 1
             // particle.position[1] + particle.radius < 0
         ){
             // console.log('dead', particle);
             particle.dead = true;
             return;
         };
-        drawCircle(particle.position, particle.radius, particle.color || 'white');
+        var [r, g, b, a] = linearGradient(gradient, lifeFraction);
+        var color = `rgba(${r * 255}, ${g * 255}, ${b * 255}, ${a})`;    
+        drawCircle(particle.position, particle.radius, color || 'white');
     })
     particles = particles.filter(function(particle){
         return ! particle.dead;
@@ -70,13 +77,21 @@ canvas.addEventListener('click', function(clickEvent){
                 (Math.random() - 0.5) * 10,
                 Math.random() * -10
             ],
-            color: `hsl(${Math.random() * 360} 100% 50%)`
+            lifeSpan: (Math.random() * 100) + 50,
+            tick: 0,
+            // color: `hsl(${Math.random() * 360} 100% 50%)`
         };
         particles.push(particle);
     }
     // console.log('what is difference', coords);
 });
-
+var gradient = [
+    [1, 0.5, 0, 0, 0],
+    [1, 0.5, 0, 1, 0.159],
+    [0.858198, 0, 0.794648, 1, 0.3],
+    [0.044487, 0.0495, 0.928845, 1, 0.538],
+    [0.044487, 0.0495, 0.928845, 0, 1],
+];
 
 var lastTime = 0;
 var animate = function(time) {
