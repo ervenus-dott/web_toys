@@ -12,10 +12,10 @@ var drawCircle = (vert, radius, color) => {
 var settings = {
     gravity: 9.8,
     drag: 0.2,
-    minParticles: 3,
-    maxParticles: 7,
-    minSize: 2,
-    maxSize: 20,
+    minParticles: 62,
+    maxParticles: 200,
+    minSize: 1,
+    maxSize: 29,
 };
 
 var gui = new lil.GUI();
