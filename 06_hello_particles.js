@@ -77,12 +77,14 @@ canvas.addEventListener('click', function(clickEvent){
     var particleCount = getValueInRange(settings.minParticles, settings.maxParticles)
     for (let i = 0; i < particleCount; i++) {
         var radius = getValueInRange(settings.minSize, settings.maxSize);
+        var velocityAngle = getValueInRange(0, tau);
+        var velocityMagnitude = getValueInRange(0, 5); 
         var particle = {
             position: coords.slice(),
             radius,
             velocity: [
-                (Math.random() - 0.5) * 10,
-                Math.random() * -10
+                Math.cos(velocityAngle) * velocityMagnitude,
+                (Math.sin(velocityAngle) * velocityMagnitude) - 5,
             ],
             lifeSpan: (Math.random() * 100) + 50,
             tick: 0,
@@ -103,9 +105,11 @@ var gradient = [
 var lastTime = 0;
 var animate = function(time) {
     requestAnimationFrame(animate);
+    // context.globalCompositeOperation = 'source-over';
     context.fillStyle = `#0008`
     context.fillRect(0, 0, canvas.width, canvas.height);
     var delta = (time - lastTime) / 1000;
+    // context.globalCompositeOperation = 'lighter';
     tickParticles(delta);
     lastTime = time;
 }
