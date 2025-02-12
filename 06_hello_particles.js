@@ -35,8 +35,8 @@ var tickParticles = function(delta) {
         if(
             particle.position[0] - particle.radius > canvas.width ||
             particle.position[0] + particle.radius < 0 ||
-            particle.position[1] - particle.radius > canvas.height ||
-            particle.position[1] + particle.radius < 0
+            particle.position[1] - particle.radius > canvas.height
+            // particle.position[1] + particle.radius < 0
         ){
             console.log('dead', particle);
             particle.dead = true;
@@ -58,7 +58,7 @@ canvas.addEventListener('click', function(clickEvent){
     var particle = {
         position: coords,
         radius: 10,
-        velocity: [0, 0],
+        velocity: [(Math.random() - 0.5) * 10, -5],
     };
     particles.push(particle);
     // console.log('what is difference', coords);
