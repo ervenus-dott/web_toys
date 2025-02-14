@@ -65,14 +65,14 @@ gui.add(settings, 'shape', ['star', 'circle']);
 gui.add(settings, 'fill');
 
 var particles = [
-    {
-        position: [canvas.width / 2, canvas.height / 2],
-        radius: 10,
-        velocity: [0, 0],
-        color: 'white',
-        lifeSpan: 100,
-        tick: 0,
-    }
+    // {
+    //     position: [canvas.width / 2, canvas.height / 2],
+    //     radius: 10,
+    //     velocity: [0, 0],
+    //     color: 'white',
+    //     lifeSpan: 100,
+    //     tick: 0,
+    // }
 ];
 var tickParticles = function(delta) {
     particles.forEach(function(particle){
@@ -126,19 +126,14 @@ var getValueInRange = function(min, max) {
     var difference = max - min;
     return min + (difference * Math.random());
 };
-canvas.addEventListener('click', function(clickEvent){
-    var rect = clickEvent.target.getBoundingClientRect();
-    var coords = [
-        clickEvent.clientX - rect.x,
-        clickEvent.clientY - rect.y
-    ];
-    var particleCount = getValueInRange(settings.minParticles, settings.maxParticles)
+var spawnParticlesAtPosition = function(pos) {
+    var particleCount = getValueInRange(settings.minParticles, settings.maxParticles);
     for (let i = 0; i < particleCount; i++) {
         var radius = getValueInRange(settings.minSize, settings.maxSize);
         var velocityAngle = getValueInRange(0, tau);
-        var velocityMagnitude = getValueInRange(0, settings.explosionForce); 
+        var velocityMagnitude = getValueInRange(0, settings.explosionForce);
         var particle = {
-            position: coords.slice(),
+            position: pos.slice(),
             radius,
             velocity: [
                 Math.cos(velocityAngle) * velocityMagnitude,
@@ -150,6 +145,14 @@ canvas.addEventListener('click', function(clickEvent){
         };
         particles.push(particle);
     }
+}
+canvas.addEventListener('click', function(clickEvent){
+    var rect = clickEvent.target.getBoundingClientRect();
+    var pos = [
+        clickEvent.clientX - rect.x,
+        clickEvent.clientY - rect.y
+    ];
+    spawnParticlesAtPosition(pos);
     // console.log('what is difference', coords);
 });
 var gradient = [
@@ -172,3 +175,4 @@ var animate = function(time) {
     lastTime = time;
 }
 requestAnimationFrame(animate)
+spawnParticlesAtPosition([175, 124])
