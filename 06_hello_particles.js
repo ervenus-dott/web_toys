@@ -2,11 +2,16 @@ var canvas = document.getElementById("toy-canvas");
 var context = canvas.getContext('2d');
 var tau = Math.PI * 2;
 
-var drawCircle = (pos, radius, color) => {
+var drawCircle = ({pos, radius, lineWidth = 10, color, fill = false}) => {
     context.beginPath();
     context.arc(pos[0], pos[1], radius, 0, tau);
-    context.fillStyle = color;
-    context.fill();
+    context.strokeStyle = color;
+    context.lineWidth = lineWidth;
+    context.stroke();
+    if (fill) {
+        context.fillStyle = color;
+        context.fill();
+    };
 };
 var drawStar = ({pos, rotation, points, innerRadius, outerRadius, lineWidth = 10, color, fill = false}) => {
     context.beginPath();
@@ -43,6 +48,8 @@ var settings = {
     maxParticles: 200,
     minSize: 1,
     maxSize: 29,
+    shape: 'star',
+    fill: true,
 };
 
 var gui = new lil.GUI();
@@ -54,6 +61,8 @@ gui.add(settings, 'minParticles', 1, 100, 1);
 gui.add(settings, 'maxParticles', 1, 200, 1);
 gui.add(settings, 'minSize', 1, 100, 1);
 gui.add(settings, 'maxSize', 1, 200, 1);
+gui.add(settings, 'shape', ['star', 'circle']);
+gui.add(settings, 'fill');
 
 var particles = [
     {
@@ -86,18 +95,28 @@ var tickParticles = function(delta) {
         };
         var [r, g, b, a] = linearGradient(gradient, lifeFraction);
         var color = `rgba(${r * 255}, ${g * 255}, ${b * 255}, ${a})`;    
-        // drawCircle(particle.position, particle.radius * a, color || 'white');
         var radius = particle.radius * a;
-        drawStar({
-            pos: particle.position,
-            rotation: -tau / 4,
-            points: 5,
-            innerRadius: radius * 0.5,
-            outerRadius: radius,
-            lineWidth: radius * 0.1,
-            color: color || 'white',
-            fill: false,
-        })
+        if (settings.shape === 'circle') {
+            drawCircle({
+                pos: particle.position,
+                radius,
+                lineWidth: radius * 0.1,
+                color: color,
+                fill: settings.fill,
+            });
+        }
+        else if (settings.shape === 'star') {
+            drawStar({
+                pos: particle.position,
+                rotation: -tau / 4,
+                points: 5,
+                innerRadius: radius * 0.5,
+                outerRadius: radius,
+                lineWidth: radius * 0.1,
+                color: color || 'white',
+                fill: settings.fill,
+            })            
+        }
     })
     particles = particles.filter(function(particle){
         return ! particle.dead;
