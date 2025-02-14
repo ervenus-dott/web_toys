@@ -2,16 +2,43 @@ var canvas = document.getElementById("toy-canvas");
 var context = canvas.getContext('2d');
 var tau = Math.PI * 2;
 
-var drawCircle = (vert, radius, color) => {
+var drawCircle = (pos, radius, color) => {
     context.beginPath();
-    context.arc(vert[0], vert[1], radius, 0, tau);
+    context.arc(pos[0], pos[1], radius, 0, tau);
     context.fillStyle = color;
     context.fill();
+};
+var drawStar = ({pos, rotation, points, innerRadius, outerRadius, lineWidth = 10, color, fill = false}) => {
+    context.beginPath();
+    var spikeSpacing = tau / points;
+    var insetSpacing = spikeSpacing / 2;
+    for (let i = 0; i < points; i++) {
+        var spikeAngle = (i * spikeSpacing) + rotation;
+        var insetAngle = spikeAngle + insetSpacing;
+        var spikeMethod = i === 0 ? 'moveTo' : 'lineTo';
+        context[spikeMethod](
+            pos[0] + Math.cos(spikeAngle) * outerRadius,
+            pos[1] + Math.sin(spikeAngle) * outerRadius,
+        );
+        context.lineTo(
+            pos[0] + Math.cos(insetAngle) * innerRadius,
+            pos[1] + Math.sin(insetAngle) * innerRadius,
+        );
+    };
+    context.closePath();
+    context.strokeStyle = color;
+    context.lineWidth = lineWidth;
+    context.stroke();
+    if (fill) {
+        context.fillStyle = color;
+        context.fill();
+    };
 };
 
 var settings = {
     gravity: 9.8,
     drag: 0.2,
+    explosionForce: 10,
     minParticles: 62,
     maxParticles: 200,
     minSize: 1,
@@ -22,6 +49,7 @@ var gui = new lil.GUI();
 
 gui.add(settings, 'gravity', 0, 40, 1/500);
 gui.add(settings, 'drag', 0, 10, 1/500);
+gui.add(settings, 'explosionForce', 0.1, 100, 1/500);
 gui.add(settings, 'minParticles', 1, 100, 1);
 gui.add(settings, 'maxParticles', 1, 200, 1);
 gui.add(settings, 'minSize', 1, 100, 1);
@@ -58,7 +86,18 @@ var tickParticles = function(delta) {
         };
         var [r, g, b, a] = linearGradient(gradient, lifeFraction);
         var color = `rgba(${r * 255}, ${g * 255}, ${b * 255}, ${a})`;    
-        drawCircle(particle.position, particle.radius * a, color || 'white');
+        // drawCircle(particle.position, particle.radius * a, color || 'white');
+        var radius = particle.radius * a;
+        drawStar({
+            pos: particle.position,
+            rotation: -tau / 4,
+            points: 5,
+            innerRadius: radius * 0.5,
+            outerRadius: radius,
+            lineWidth: radius * 0.1,
+            color: color || 'white',
+            fill: false,
+        })
     })
     particles = particles.filter(function(particle){
         return ! particle.dead;
@@ -78,7 +117,7 @@ canvas.addEventListener('click', function(clickEvent){
     for (let i = 0; i < particleCount; i++) {
         var radius = getValueInRange(settings.minSize, settings.maxSize);
         var velocityAngle = getValueInRange(0, tau);
-        var velocityMagnitude = getValueInRange(0, 5); 
+        var velocityMagnitude = getValueInRange(0, settings.explosionForce); 
         var particle = {
             position: coords.slice(),
             radius,
