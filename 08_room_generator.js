@@ -35,7 +35,7 @@ var settings = {
 };
 
 var gui = new lil.GUI();
-gui.add(settings, 'energy', 2, 20, 1);
+gui.add(settings, 'energy', 2, 120, 1);
 gui.add(settings, 'viewScale', 20, 100, 1);
 gui.add(settings, 'branchesPerRoom', 1, 4, 1);
 gui.add(settings, 'seed');
@@ -58,13 +58,27 @@ var drawLine = (a, b, color, lineWidth = 1) => {
 };
 
 
-var getRandomInt = function(min, max) {
+var getRandomInt = function (min, max) {
     const minCeiled = Math.ceil(min);
     const maxFloored = Math.floor(max);
-    return Math.floor(rng() * (maxFloored - minCeiled + 1) + minCeiled); 
+    return Math.floor(rng() * (maxFloored - minCeiled + 1) + minCeiled);
     // The maximum is inclusive and the minimum is inclusive
 };
+var shuffle = function (array) {
+    let currentIndex = array.length;
 
+    // While there remain elements to shuffle...
+    while (currentIndex != 0) {
+
+        // Pick a remaining element...
+        let randomIndex = Math.floor(rng() * currentIndex);
+        currentIndex--;
+
+        // And swap it with the current element.
+        [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex], array[currentIndex]];
+    }
+};
 var cardinals = [
     [1, 0],
     [0, 1],
@@ -72,19 +86,19 @@ var cardinals = [
     [0, -1],
 ];
 
-var isRoomAtPosition = function(pos) {
+var isRoomAtPosition = function (pos) {
     var key = pos.join(',');
-    return !! rooms[key]
+    return !!rooms[key]
 };
 
-var getAbsoluteCoordinateByIndex = function(pos, index) {
+var getAbsoluteCoordinateByIndex = function (pos, index) {
     var cardinal = cardinals[index];
     return [
         pos[0] + cardinal[0],
         pos[1] + cardinal[1],
     ];
 };
-var makeRoom = function(pos) {
+var makeRoom = function (pos) {
     var room = {
         pos,
         connections: [],
@@ -94,30 +108,42 @@ var makeRoom = function(pos) {
     rooms[key] = room;
     return room;
 };
-var roomValuesGenerator = function(energy) {
+var roomValuesGenerator = function (energy) {
     rooms = {};
     var currentRoom = makeRoom([0, 0]);
     currentRoom.color = 'green';
     for (let i = 0; i < energy; i++) {
         var numConnections = getRandomInt(1, settings.branchesPerRoom);
         var newRoom;
-        while (currentRoom.connections.length < numConnections) {
-            var newCoordinate = getAbsoluteCoordinateByIndex(currentRoom.pos, getRandomInt(0,3));
-            if (!isRoomAtPosition(newCoordinate)){
-                currentRoom.connections.push(newCoordinate); 
-                newRoom = makeRoom(newCoordinate);
-                newRoom.connections.push(currentRoom.pos);
-            };                
+        // TODO: Make loop care about neighbors not connections so it doesnt break in infinite loop
+        // look at the available positions around the current coordinate
+        // then pick randomly among the available positions
+        var availablePositions = [];
+        for (let c = 0; c < cardinals.length; c++) {
+            var newCoordinate = getAbsoluteCoordinateByIndex(currentRoom.pos, c);
+            if (!isRoomAtPosition(newCoordinate)) {
+                availablePositions.push(newCoordinate);
+            };
+        };
+        shuffle(availablePositions);
+        while (
+            availablePositions.length &&
+            currentRoom.connections.length < numConnections
+        ) {
+            var newCoordinate = availablePositions.pop();
+            currentRoom.connections.push(newCoordinate);
+            newRoom = makeRoom(newCoordinate);
+            newRoom.connections.push(currentRoom.pos);
         };
         currentRoom = newRoom;
     };
     currentRoom.color = 'red';
 };
-var renderRooms = function() {
+var renderRooms = function () {
     context.fillStyle = `#000`
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.save();
-    context.translate(canvas.width / 2, canvas.height / 2);    
+    context.translate(canvas.width / 2, canvas.height / 2);
     context.scale(settings.viewScale, settings.viewScale);
     Object.values(rooms).forEach((room) => {
         room.connections.forEach((connection) => {
@@ -138,7 +164,7 @@ var renderRooms = function() {
     context.restore();
 };
 
-var updateMap = function(){
+var updateMap = function () {
     rng = new Math.seedrandom(settings.seed);
     roomValuesGenerator(settings.energy);
     renderRooms();
