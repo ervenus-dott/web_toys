@@ -120,12 +120,25 @@ var snapShotPlayer = function() {
     });
 };
 snapShotPlayer();
-var handleMouseMoveEvent = (mouseEvent) => {
+var handleMouseMoveEvent = (event) => {
+    // should prevent touch scrolling on mobile devices so we can read touch position while the user drags
+    event.preventDefault();
+    // clientX and clientY maybe empty if this is a touch event
+    var x = event.clientX;
+    var y = event.clientY;
+    // search for the touch data and use that if we've got it
+    if (event.touches) {
+        var touch = event.touches[0];
+        if (touch) {
+            x = touch.clientX;
+            y = touch.clientY;
+        }
+    }
     // compensate for difference between canvas coordinate and event coordinate
-    var rect = mouseEvent.target.getBoundingClientRect();
+    var rect = event.target.getBoundingClientRect();
     var difference = {
-        x: mouseEvent.clientX - rect.x,
-        y: mouseEvent.clientY - rect.y,
+        x: x - rect.x,
+        y: y - rect.y,
     };
     difference.x -= canvas.width / 2;
     difference.y -= canvas.height / 2;
@@ -135,6 +148,7 @@ var handleMouseMoveEvent = (mouseEvent) => {
     snapShotPlayer()
 };
 canvas.addEventListener('mousemove', handleMouseMoveEvent);
+canvas.addEventListener('touchmove', handleMouseMoveEvent);
 
 var getSampleJustBeforeTimeOffset = function(offset) {
     var then = performance.now() - offset;
