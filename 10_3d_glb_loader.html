@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="canvas-holder">
+            <canvas
+                id="toy-canvas"
+                width="512"
+                height="512"
+            ></canvas>
+        </div>
+    </div>
+    <script src="https://unpkg.com/seedrandom@3.0.5/seedrandom.min.js"></script>
+    <script src="https://unpkg.com/lil-gui@0.20.0/dist/lil-gui.umd.js"></script>
+    <script type="importmap">
+			{
+				"imports": {
+					"three": "https://threejs.org/build/three.webgpu.js",
+					"three/webgpu": "https://threejs.org/build/three.webgpu.js",
+					"three/tsl": "https://threejs.org/build/three.tsl.js",
+					"three/addons/": "https://threejs.org/examples/jsm/"
+				}
+			}
+		</script>
+    <script type="module" src="10_3d_glb_loader.js"></script>
+</body>
+</html>
