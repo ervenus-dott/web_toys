@@ -75,3 +75,35 @@ input {
 .canvas-holder {
 	user-select: none;
 }
+
+/* dragable windows */
+.dragable-window-holder {
+	position: relative;
+	margin: -16px; /* because the body has a positive 16 px padding */
+}
+.dragable-window {
+	position: absolute;
+	border: 10px solid rgb(62, 197, 62);
+}
+.title-bar {
+	position: relative;
+	text-align: right;
+	background-color: brown;
+	border: 10px solid rgb(62, 85, 197);
+}
+.title-bar button.close {
+	aspect-ratio: 1;
+	background-color: rgb(181, 183, 97);
+	border: 10px solid rgb(54, 15, 20);
+	color: white;
+	margin: -10px -10px -10px 0px; 
+}
+.window-content {
+	background-color: #333;
+	border: 10px solid rgb(123, 64, 1);
+	color: white;
+	overflow: hidden;
+	overflow-y: auto;
+	resize: both;
+    min-width: 100px;
+}
