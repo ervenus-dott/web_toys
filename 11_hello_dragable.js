@@ -1,22 +1,24 @@
-var titlebar = document.querySelector(".dragable-window.goat .title-bar");
-var dragableWindow = document.querySelector(".dragable-window.goat");
+var dragableWindow;
 
 var isMouseDown = false;
 var layerX = 0;
 var layerY = 0;
 
 var handleTitlebarClick = (clickEvent) => {
+    console.log('what is click event', clickEvent);
+    var titlebar = clickEvent.target.closest(".title-bar");
+    dragableWindow = clickEvent.target.closest(".dragable-window");
+    if (!titlebar || !dragableWindow) {return;}
     clickEvent.preventDefault();
     var parentRect = dragableWindow.getBoundingClientRect()
     var titleRect = titlebar.getBoundingClientRect()
     console.log('what is parentRect', parentRect);
     console.log('what is titleRect', titleRect);
-    console.log('what is click event', clickEvent);
     isMouseDown = true;
     layerY = (titleRect.top - parentRect.top) + clickEvent.layerY;
     layerX = (titleRect.left - parentRect.left) + clickEvent.layerX;
 };
-titlebar.addEventListener('mousedown', handleTitlebarClick);
+document.body.addEventListener('mousedown', handleTitlebarClick);
 
 var handleMouseMove = (moveEvent) => {
     if(isMouseDown) {    

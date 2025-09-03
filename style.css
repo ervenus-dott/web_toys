@@ -107,3 +107,7 @@ input {
 	resize: both;
     min-width: 100px;
 }
+.window-content img {
+	width: 100%;
+	height: auto;
+}
