@@ -33,17 +33,15 @@ var isMouseDown = false;
 var layerX = 0;
 var layerY = 0;
 
-var closeButton = document.getElementById("close")
-// TODO: Make x close the window
-closeButton.addEventListener('click', (clickEvent) => {       
-    dragableWindow.outerText = ""
-})
-
 var handleTitlebarClick = (clickEvent) => {
     console.log('what is click event', clickEvent);
     var titlebar = clickEvent.target.closest(".title-bar");
+    var closeButton = clickEvent.target.closest(".close");
     dragableWindow = clickEvent.target.closest(".dragable-window");
     if (!titlebar || !dragableWindow) {return;}
+    if (closeButton) {
+        dragableWindow.outerText = "";
+    }
     clickEvent.preventDefault();
     var parentRect = dragableWindow.getBoundingClientRect()
     var titleRect = titlebar.getBoundingClientRect()
