@@ -1,3 +1,4 @@
+var dragableWindowHolder = document.querySelector('.dragable-window-holder');
 var imageMap = {
     capybara: 'https://blog.nature.org/wp-content/uploads/2020/02/29555193323_15d785590f_k.jpg?w=1024', 
     cat: 'https://i.guim.co.uk/img/media/327aa3f0c3b8e40ab03b4ae80319064e401c6fbc/377_133_3542_2834/master/3542.jpg?width=465&dpr=1&s=none&crop=none',
@@ -24,7 +25,7 @@ document.body.addEventListener('click', (clickEvent) => {
     console.log('what is dataset', clickEvent.target.dataset);
     var windowType = clickEvent.target.dataset.windowType;
     if (!windowType) {return;}
-    document.body.innerHTML += renderWindowContent(windowType);
+    dragableWindowHolder.innerHTML += renderWindowContent(windowType);
 })
 
 var dragableWindow;
@@ -40,8 +41,11 @@ var handleTitlebarClick = (clickEvent) => {
     dragableWindow = clickEvent.target.closest(".dragable-window");
     if (!titlebar || !dragableWindow) {return;}
     if (closeButton) {
-        dragableWindow.outerText = "";
+        dragableWindow.outerHTML = "";
+        return;
     }
+    dragableWindowHolder.removeChild(dragableWindow);
+    dragableWindowHolder.appendChild(dragableWindow);
     clickEvent.preventDefault();
     var parentRect = dragableWindow.getBoundingClientRect()
     var titleRect = titlebar.getBoundingClientRect()
@@ -55,7 +59,7 @@ document.body.addEventListener('mousedown', handleTitlebarClick);
 
 var handleMouseMove = (moveEvent) => {
     if(isMouseDown) {    
-        console.log('what is moveEvent', moveEvent);
+        // console.log('what is moveEvent', moveEvent);
         dragableWindow.style.left = Math.round(moveEvent.clientX - layerX) + 'px';
         dragableWindow.style.top = Math.round(moveEvent.clientY - layerY) + 'px';
     }
