@@ -1,3 +1,4 @@
+const downloadLink = document.getElementById("download-link")
 const canvas = document.getElementById("color-web")
 const context = canvas.getContext('2d');
 const canvasPreVis = document.getElementById("pre-vis")
@@ -12,6 +13,12 @@ let circleVert = [0, 0];
 let mouseVert = [0, 0];
 let isDrawing = false;
 let isTouchDown = false;
+
+function dlCanvas() {
+    const base64ImageURL = canvas.toDataURL('image/png');
+    downloadLink.href = base64ImageURL;
+};
+downloadLink.addEventListener('click', dlCanvas, false);
 
 const settings = {
     bilateralSymmetry: true,
