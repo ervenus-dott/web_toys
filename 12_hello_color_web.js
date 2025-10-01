@@ -14,7 +14,7 @@ let isMouseDown = false;
 
 const settings = {
     bilateralSymmetry: true,
-    radialSymmetry: 1,
+    radialSymmetry: 6,
     currentColor: '#ff9922',
     opacity: 0.3,
 };
@@ -94,14 +94,14 @@ const renderLoop = function(time) {
 };
 requestAnimationFrame(renderLoop);
 
-canvasPreVis.addEventListener('mousemove', (mouseEvent) => {
+canvas.addEventListener('mousemove', (mouseEvent) => {
     // console.log('what is mouseEvent', mouseEvent);
     mouseVert[0] = mouseEvent.clientX - cx;
     mouseVert[1] = mouseEvent.clientY - cy;
 });
-canvasPreVis.addEventListener('mousedown', (mouseEvent) => {
+canvas.addEventListener('mousedown', (mouseEvent) => {
     isMouseDown = true;
 });
-canvasPreVis.addEventListener('mouseup', (mouseEvent) => {
+canvas.addEventListener('mouseup', (mouseEvent) => {
     isMouseDown = false;
 });
