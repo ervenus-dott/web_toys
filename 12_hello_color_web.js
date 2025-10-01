@@ -10,7 +10,8 @@ let cx = 0;
 let cy = 0;
 let circleVert = [0, 0];
 let mouseVert = [0, 0];
-let isMouseDown = false;
+let isDrawing = false;
+let isTouchDown = false;
 
 const settings = {
     bilateralSymmetry: true,
@@ -87,7 +88,7 @@ const renderLoop = function(time) {
     )
     const combinedColor = settings.currentColor + Math.round(settings.opacity * 255).toString(16).padStart(2, '0');
     // console.log('what is combined color', combinedColor);
-    if (isMouseDown) {
+    if (isDrawing) {
         drawRadial(context, () => {            
             drawCircle(mouseVert, settings.brushSize, combinedColor, context);
         })
@@ -99,15 +100,34 @@ const renderLoop = function(time) {
     contextPreVis.restore();
 };
 requestAnimationFrame(renderLoop);
-
-canvas.addEventListener('mousemove', (mouseEvent) => {
-    // console.log('what is mouseEvent', mouseEvent);
-    mouseVert[0] = mouseEvent.clientX - cx;
-    mouseVert[1] = mouseEvent.clientY - cy;
-});
+var handleMouseMoveEvent = (event) => {
+    // should prevent touch scrolling on mobile devices so we can read touch position while the user drags
+    event.preventDefault();
+    // clientX and clientY maybe empty if this is a touch event
+    var x = event.clientX;
+    var y = event.clientY;
+    // search for the touch data and use that if we've got it
+    if (event.touches) {
+        var touch = event.touches[0];
+        if (touch) {
+            x = touch.clientX;
+            y = touch.clientY;
+        }
+    }
+    mouseVert[0] = x - cx;
+    mouseVert[1] = y - cy;
+};
+canvas.addEventListener('mousemove', handleMouseMoveEvent);
+canvas.addEventListener('touchmove', handleMouseMoveEvent);
 canvas.addEventListener('mousedown', (mouseEvent) => {
-    isMouseDown = true;
+    isDrawing = true;
 });
 canvas.addEventListener('mouseup', (mouseEvent) => {
-    isMouseDown = false;
+    isDrawing = false;
+});
+canvas.addEventListener('touchstart', (mouseEvent) => {
+    isDrawing = true;
+});
+canvas.addEventListener('touchstop', (mouseEvent) => {
+    isDrawing = false;
 });
