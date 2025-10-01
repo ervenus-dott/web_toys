@@ -50,25 +50,44 @@ context.arc(vert[0], vert[1], radius, 0, tau);
 context.fillStyle = color;
 context.fill();
 };
+const drawMirrored = function(context, drawCallback) {
+    context.save();
+    drawCallback();
+    if (settings.bilateralSymmetry) {
+        context.scale(-1, +1);
+        drawCallback();
+    }
+    context.restore();
+};
 
 const renderLoop = function(time) {
     requestAnimationFrame(renderLoop);
     resize();
+    contextPreVis.clearRect(0, 0, width, height);
+    context.save();
+    contextPreVis.save();
+    context.translate(cx, cy);
+    contextPreVis.translate(cx, cy);
     context.globalCompositeOperation = 'screen';
     const combinedColor = settings.currentColor + Math.round(settings.opacity * 255).toString(16).padStart(2, '0');
     // console.log('what is combined color', combinedColor);
     if (isMouseDown) {
-        drawCircle(mouseVert, 10, combinedColor, context);
+        drawMirrored(context, () => {            
+            drawCircle(mouseVert, 10, combinedColor, context);
+        })
     }
-    contextPreVis.clearRect(0, 0, width, height);
-    drawCircle(mouseVert, 10, combinedColor, contextPreVis);
+    drawMirrored(contextPreVis, () => {            
+        drawCircle(mouseVert, 10, combinedColor, contextPreVis);
+    })
+    context.restore();
+    contextPreVis.restore();
 };
 requestAnimationFrame(renderLoop);
 
 canvasPreVis.addEventListener('mousemove', (mouseEvent) => {
     // console.log('what is mouseEvent', mouseEvent);
-    mouseVert[0] = mouseEvent.clientX;
-    mouseVert[1] = mouseEvent.clientY;
+    mouseVert[0] = mouseEvent.clientX - cx;
+    mouseVert[1] = mouseEvent.clientY - cy;
 });
 canvasPreVis.addEventListener('mousedown', (mouseEvent) => {
     isMouseDown = true;
