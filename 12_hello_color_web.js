@@ -59,6 +59,16 @@ const drawMirrored = function(context, drawCallback) {
     }
     context.restore();
 };
+const drawRadial = function(context, drawCallback) {
+    const n = settings.radialSymmetry || 1;
+    const radialSegment = tau / n; 
+    for (let i = 0; i < n; i += 1) {
+        context.save();
+        context.rotate(radialSegment * i);
+        drawMirrored(context, drawCallback);
+        context.restore();
+    }
+};
 
 const renderLoop = function(time) {
     requestAnimationFrame(renderLoop);
@@ -72,11 +82,11 @@ const renderLoop = function(time) {
     const combinedColor = settings.currentColor + Math.round(settings.opacity * 255).toString(16).padStart(2, '0');
     // console.log('what is combined color', combinedColor);
     if (isMouseDown) {
-        drawMirrored(context, () => {            
+        drawRadial(context, () => {            
             drawCircle(mouseVert, 10, combinedColor, context);
         })
     }
-    drawMirrored(contextPreVis, () => {            
+    drawRadial(contextPreVis, () => {            
         drawCircle(mouseVert, 10, combinedColor, contextPreVis);
     })
     context.restore();
