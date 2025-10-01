@@ -14,14 +14,18 @@ let isMouseDown = false;
 
 const settings = {
     bilateralSymmetry: true,
+    glow: true,
     radialSymmetry: 6,
+    brushSize: 10,
     currentColor: '#ff9922',
     opacity: 0.3,
 };
 var gui = new lil.GUI();
 
 gui.add(settings, 'bilateralSymmetry');
+gui.add(settings, 'glow');
 gui.add(settings, 'radialSymmetry', 1, 10, 1);
+gui.add(settings, 'brushSize', 3, 25);
 gui.addColor(settings, 'currentColor');
 gui.add(settings, 'opacity', 0, 1);
 
@@ -78,16 +82,18 @@ const renderLoop = function(time) {
     contextPreVis.save();
     context.translate(cx, cy);
     contextPreVis.translate(cx, cy);
-    context.globalCompositeOperation = 'screen';
+    if (settings.glow) (
+        context.globalCompositeOperation = 'screen'
+    )
     const combinedColor = settings.currentColor + Math.round(settings.opacity * 255).toString(16).padStart(2, '0');
     // console.log('what is combined color', combinedColor);
     if (isMouseDown) {
         drawRadial(context, () => {            
-            drawCircle(mouseVert, 10, combinedColor, context);
+            drawCircle(mouseVert, settings.brushSize, combinedColor, context);
         })
     }
     drawRadial(contextPreVis, () => {            
-        drawCircle(mouseVert, 10, combinedColor, contextPreVis);
+        drawCircle(mouseVert, settings.brushSize, combinedColor, contextPreVis);
     })
     context.restore();
     contextPreVis.restore();
