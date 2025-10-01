@@ -11,7 +11,20 @@ let cy = 0;
 let circleVert = [0, 0];
 let mouseVert = [0, 0];
 let isMouseDown = false;
-let currentColor = '#f925';
+
+const settings = {
+    bilateralSymmetry: true,
+    radialSymmetry: 1,
+    currentColor: '#ff9922',
+    opacity: 0.3,
+};
+var gui = new lil.GUI();
+
+gui.add(settings, 'bilateralSymmetry');
+gui.add(settings, 'radialSymmetry', 1, 10, 1);
+gui.addColor(settings, 'currentColor');
+gui.add(settings, 'opacity', 0, 1);
+
 
 const resize = function() {
     const rect = canvas.getBoundingClientRect();
@@ -42,11 +55,13 @@ const renderLoop = function(time) {
     requestAnimationFrame(renderLoop);
     resize();
     context.globalCompositeOperation = 'screen';
+    const combinedColor = settings.currentColor + Math.round(settings.opacity * 255).toString(16).padStart(2, '0');
+    // console.log('what is combined color', combinedColor);
     if (isMouseDown) {
-        drawCircle(mouseVert, 10, currentColor, context);
+        drawCircle(mouseVert, 10, combinedColor, context);
     }
     contextPreVis.clearRect(0, 0, width, height);
-    drawCircle(mouseVert, 10, currentColor, contextPreVis);
+    drawCircle(mouseVert, 10, combinedColor, contextPreVis);
 };
 requestAnimationFrame(renderLoop);
 
