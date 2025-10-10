@@ -22,7 +22,11 @@ downloadLink.addEventListener("click", dlCanvas, false);
 
 const clearCanvas = () => {
     context.clearRect(0, 0, canvas.width, canvas.height);
-}
+};
+const clearAndSendMessage = () => {
+    clearCanvas()
+    sendClearMessage()
+};
 const settings = {
   bilateralSymmetry: true,
   glow: true,
@@ -30,7 +34,7 @@ const settings = {
   brushSize: 10,
   currentColor: "#ff9922",
   opacity: 0.3,
-  clearCanvas: clearCanvas,
+  clearCanvas: clearAndSendMessage,
 };
 var gui = new lil.GUI();
 
@@ -41,7 +45,7 @@ gui.add(settings, "radialSymmetry", 1, 10, 1).listen();
 gui.add(settings, "brushSize", 3, 25).listen();
 gui.addColor(settings, "currentColor").listen();
 gui.add(settings, "opacity", 0, 1).listen();
-gui.add(settings, "clearCanvas")
+gui.add(settings, "clearCanvas").listen();
 // const handleColorChange = () => {
 //   sendSettingsMessage(settings.currentColor, settings.opacity);
 // };
@@ -184,6 +188,8 @@ client.on("message", (topic, message) => {
         mouseVert[1] = json.y;
     } else if (topic === `${topicPrefix}down`) {
         isDrawing = json.isDown;
+    } else if (topic === `${topicPrefix}clear`) {
+        clearCanvas();
     } else if (topic === `${topicPrefix}settings`) {
         Object.assign(settings, json);
         // colorController.setValue(json.color);
@@ -197,6 +203,9 @@ const sendMouseMoveMessage = (x, y) => {
 };
 const sendMouseMouseDownMessage = (isDown) => {
   client.publish(`${topicPrefix}down`, JSON.stringify({ clientID, isDown }));
+};
+const sendClearMessage = () => {
+    client.publish(`${topicPrefix}clear`, JSON.stringify({ clientID }));
 };
 const sendSettingsMessage = () => {
   client.publish(`${topicPrefix}settings`, JSON.stringify({ clientID, ...settings }));
