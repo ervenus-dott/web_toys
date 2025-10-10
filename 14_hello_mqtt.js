@@ -51,7 +51,7 @@ gui.add(settings, "clearCanvas").listen();
 // };
 // colorController.onFinishChange(handleColorChange);
 // opacityController.onFinishChange(handleColorChange);
-
+let globalScale = 1;
 const resize = function () {
   const rect = canvas.getBoundingClientRect();
   if (width !== rect.width || height !== rect.height) {
@@ -59,6 +59,7 @@ const resize = function () {
     height = rect.height;
     cx = width / 2;
     cy = height / 2;
+    globalScale = 1 / Math.min(cx, cy);
     circleVert[0] = cx;
     circleVert[1] = cy;
     canvas.width = width;
@@ -104,17 +105,20 @@ const renderLoop = function (time) {
   contextPreVis.save();
   context.translate(cx, cy);
   contextPreVis.translate(cx, cy);
+  const scale = 1 / globalScale;
+  context.scale(scale, scale);
+  contextPreVis.scale(scale, scale);
   if (settings.glow) context.globalCompositeOperation = "screen";
   const combinedColor = settings.currentColor +
     Math.round(settings.opacity * 255).toString(16).padStart(2, "0");
   // console.log('what is combined color', combinedColor);
   if (isDrawing) {
     drawRadial(context, () => {
-      drawCircle(mouseVert, settings.brushSize, combinedColor, context);
+      drawCircle(mouseVert, settings.brushSize / 100, combinedColor, context);
     });
   }
   drawRadial(contextPreVis, () => {
-    drawCircle(mouseVert, settings.brushSize, combinedColor, contextPreVis);
+    drawCircle(mouseVert, settings.brushSize / 100, combinedColor, contextPreVis);
   });
   context.restore();
   contextPreVis.restore();
@@ -134,8 +138,16 @@ var handleMouseMoveEvent = (event) => {
       y = touch.clientY;
     }
   }
-  mouseVert[0] = x - cx;
-  mouseVert[1] = y - cy;
+    var rect = event.target.getBoundingClientRect();
+    var difference = {
+        x: x - rect.x,
+        y: y - rect.y,
+    };
+    difference.x -= width / 2;
+    difference.y -= height / 2;
+    // console.log('what is difference', difference);
+    mouseVert[0] = difference.x * globalScale;
+    mouseVert[1] = -difference.y * globalScale;
   sendMouseMoveMessage(mouseVert[0], mouseVert[1]);
 };
 canvas.addEventListener("mousemove", handleMouseMoveEvent);
