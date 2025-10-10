@@ -20,6 +20,9 @@ function dlCanvas() {
 }
 downloadLink.addEventListener("click", dlCanvas, false);
 
+const clearCanvas = () => {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+}
 const settings = {
   bilateralSymmetry: true,
   glow: true,
@@ -27,8 +30,10 @@ const settings = {
   brushSize: 10,
   currentColor: "#ff9922",
   opacity: 0.3,
+  clearCanvas: clearCanvas,
 };
 var gui = new lil.GUI();
+
 
 gui.add(settings, "bilateralSymmetry").listen();
 gui.add(settings, "glow").listen();
@@ -36,6 +41,7 @@ gui.add(settings, "radialSymmetry", 1, 10, 1).listen();
 gui.add(settings, "brushSize", 3, 25).listen();
 gui.addColor(settings, "currentColor").listen();
 gui.add(settings, "opacity", 0, 1).listen();
+gui.add(settings, "clearCanvas")
 // const handleColorChange = () => {
 //   sendSettingsMessage(settings.currentColor, settings.opacity);
 // };
