@@ -10,10 +10,8 @@ let width = 0;
 let height = 0;
 let cx = 0;
 let cy = 0;
-let circleVert = [0, 0];
-let mouseVert = [0, 0];
-let isDrawing = false;
 let isTouchDown = false;
+let userMap = {};
 
 function dlCanvas() {
   const base64ImageURL = canvas.toDataURL("image/png");
@@ -61,8 +59,6 @@ const resize = function () {
     cx = width / 2;
     cy = height / 2;
     globalScale = 1 / Math.min(cx, cy);
-    circleVert[0] = cx;
-    circleVert[1] = cy;
     canvas.width = width;
     canvas.height = height;
     canvasPreVis.width = width;
@@ -97,6 +93,24 @@ const drawRadial = function (context, drawCallback) {
     context.restore();
   }
 };
+const drawFromSettings = function(settings) {
+  if (settings.glow) {context.globalCompositeOperation = "screen";}
+  const combinedColor = settings.currentColor +
+    Math.round(settings.opacity * 255).toString(16).padStart(2, "0");
+  // console.log('what is combined color', combinedColor);
+  const mouseVert = [
+    settings.x,
+    settings.y,
+  ];
+  if (settings.isDown) {
+    drawRadial(context, () => {
+      drawCircle(mouseVert, settings.brushSize / 100, combinedColor, context);
+    });
+  }
+  drawRadial(contextPreVis, () => {
+    drawCircle(mouseVert, settings.brushSize / 100, combinedColor, contextPreVis);
+  });
+}
 
 const renderLoop = function (time) {
   requestAnimationFrame(renderLoop);
@@ -111,18 +125,8 @@ const renderLoop = function (time) {
   const scale = 1 / globalScale;
   context.scale(scale, scale);
   contextPreVis.scale(scale, scale);
-  if (settings.glow) context.globalCompositeOperation = "screen";
-  const combinedColor = settings.currentColor +
-    Math.round(settings.opacity * 255).toString(16).padStart(2, "0");
-  // console.log('what is combined color', combinedColor);
-  if (isDrawing) {
-    drawRadial(context, () => {
-      drawCircle(mouseVert, settings.brushSize / 100, combinedColor, context);
-    });
-  }
-  drawRadial(contextPreVis, () => {
-    drawCircle(mouseVert, settings.brushSize / 100, combinedColor, contextPreVis);
-  });
+  drawFromSettings(settings);
+  Object.values(userMap).forEach(drawFromSettings)
   context.restore();
   contextPreVis.restore();
 };
@@ -149,41 +153,43 @@ var handleMouseMoveEvent = (event) => {
     difference.x -= width / 2;
     difference.y -= height / 2;
     // console.log('what is difference', difference);
-    mouseVert[0] = difference.x * globalScale;
-    mouseVert[1] = difference.y * globalScale;
-  sendMouseMoveMessage(mouseVert[0], mouseVert[1]);
+    settings.x = difference.x * globalScale;
+    settings.y = difference.y * globalScale;
+  sendMouseMoveMessage(settings.x, settings.y);
 };
 canvas.addEventListener("mousemove", handleMouseMoveEvent);
 canvas.addEventListener("touchmove", handleMouseMoveEvent);
 canvas.addEventListener("mousedown", (mouseEvent) => {
-  isDrawing = true;
-  sendMouseMouseDownMessage(isDrawing);
+  settings.isDown = true;
+  sendMouseDownMessage(settings.isDown);
 });
 canvas.addEventListener("mouseup", (mouseEvent) => {
-  isDrawing = false;
-  sendMouseMouseDownMessage(isDrawing);
+  settings.isDown = false;
+  sendMouseDownMessage(settings.isDown);
 });
 canvas.addEventListener("touchstart", (mouseEvent) => {
-  isDrawing = true;
-  sendMouseMouseDownMessage(isDrawing);
+  settings.isDown = true;
+  sendMouseDownMessage(settings.isDown);
 });
 canvas.addEventListener("touchstop", (mouseEvent) => {
-  isDrawing = false;
-  sendMouseMouseDownMessage(isDrawing);
+  settings.isDown = false;
+  sendMouseDownMessage(settings.isDown);
 });
 
 const client = mqtt.connect("wss://mqtt-dashboard.com:8884/mqtt");
 const clientID = Math.floor(Math.random() * 1e18).toString(36).slice(2, 7);
-const topicPrefix = "ercillias_drawing_toy/";
+const topicPrefix = 'ercillias_drawing_toy';
+const globalTopicPrefix = `${topicPrefix}/`;
+const privateTopicPrefix = `${topicPrefix}-${clientID}/`;
 client.on("connect", () => {
-    connectStatus.innerText = "connected!";
-    console.log("mqtt connected");
-    client.subscribe(`${topicPrefix}#`, (err) => {
-        if (err) {
-            console.log("error subscribing to topic", err);
-        }
-        client.publish(`${topicPrefix}hello`, JSON.stringify({clientID}));
-    });
+  connectStatus.innerText = "connected!";
+  console.log("mqtt connected");
+  client.subscribe([`${globalTopicPrefix}#`, `${privateTopicPrefix}#`], (err) => {
+    if (err) {
+      console.log("error subscribing to topic", err);
+    }
+    sendHelloMessage();
+  });
 });
 client.on("disconnect", () => {
     console.log("mqtt disconnected");
@@ -199,15 +205,25 @@ client.on("message", (topic, message) => {
     if (json.clientID === clientID) {
         return;
         // ignore messages that we send
-    } else if (topic === `${topicPrefix}move`) {
-        mouseVert[0] = json.x;
-        mouseVert[1] = json.y;
-    } else if (topic === `${topicPrefix}down`) {
-        isDrawing = json.isDown;
-    } else if (topic === `${topicPrefix}clear`) {
+    } else if (topic === `${globalTopicPrefix}move`) {
+      const userSettings = userMap[json.clientID];
+      if (userSettings) {
+        userSettings.x = json.x;
+        userSettings.y = json.y;
+      }
+    } else if (topic === `${globalTopicPrefix}down`) {
+        const userSettings = userMap[json.clientID];
+        if (userSettings) {
+          userSettings.isDown = json.isDown;
+        }
+    } else if (topic === `${globalTopicPrefix}clear`) {
         clearCanvas();
-    } else if (topic === `${topicPrefix}settings`) {
-        Object.assign(settings, json);
+    } else if (topic === `${globalTopicPrefix}hello`) {
+        userMap[json.clientID] = json;
+        sendSettingsMessage(json.clientID);
+    } else if (topic.endsWith('settings')) {
+        console.log('settings recieved from:', topic);
+        userMap[json.clientID] = json;
         // colorController.setValue(json.color);
         // opacityController.setValue(json.opacity);
     }
@@ -215,15 +231,23 @@ client.on("message", (topic, message) => {
 });
 
 const sendMouseMoveMessage = (x, y) => {
-  client.publish(`${topicPrefix}move`, JSON.stringify({ clientID, x, y }));
+  client.publish(`${globalTopicPrefix}move`, JSON.stringify({ clientID, x, y }));
 };
-const sendMouseMouseDownMessage = (isDown) => {
-  client.publish(`${topicPrefix}down`, JSON.stringify({ clientID, isDown }), {qos: 2});
+const sendHelloMessage = () => {
+  client.publish(`${globalTopicPrefix}hello`, JSON.stringify({ clientID, ...settings }), {qos: 2});
+};
+const sendMouseDownMessage = (isDown) => {
+  client.publish(`${globalTopicPrefix}down`, JSON.stringify({ clientID, isDown }), {qos: 2});
 };
 const sendClearMessage = () => {
-    client.publish(`${topicPrefix}clear`, JSON.stringify({ clientID }));
+    client.publish(`${globalTopicPrefix}clear`, JSON.stringify({ clientID }));
 };
-const sendSettingsMessage = () => {
-  client.publish(`${topicPrefix}settings`, JSON.stringify({ clientID, ...settings }), {qos: 2});
+const sendSettingsMessage = (specificClientID) => {
+  console.log('sending settings to target:', specificClientID);
+  const topic = specificClientID ? `${topicPrefix}-${specificClientID}/settings` : `${globalTopicPrefix}settings`;
+  client.publish(topic, JSON.stringify({ clientID, ...settings }), {qos: 2});
 };
-gui.onFinishChange(sendSettingsMessage);
+gui.onFinishChange(() => {
+  sendSettingsMessage()
+});
+
