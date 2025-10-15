@@ -103,6 +103,8 @@ const renderLoop = function (time) {
   contextPreVis.clearRect(0, 0, width, height);
   context.save();
   contextPreVis.save();
+  // context.fillStyle = '#0001';
+  // context.fillRect(0, 0, width, height);
   context.translate(cx, cy);
   contextPreVis.translate(cx, cy);
   const scale = 1 / globalScale;
@@ -147,7 +149,7 @@ var handleMouseMoveEvent = (event) => {
     difference.y -= height / 2;
     // console.log('what is difference', difference);
     mouseVert[0] = difference.x * globalScale;
-    mouseVert[1] = -difference.y * globalScale;
+    mouseVert[1] = difference.y * globalScale;
   sendMouseMoveMessage(mouseVert[0], mouseVert[1]);
 };
 canvas.addEventListener("mousemove", handleMouseMoveEvent);
@@ -214,12 +216,12 @@ const sendMouseMoveMessage = (x, y) => {
   client.publish(`${topicPrefix}move`, JSON.stringify({ clientID, x, y }));
 };
 const sendMouseMouseDownMessage = (isDown) => {
-  client.publish(`${topicPrefix}down`, JSON.stringify({ clientID, isDown }));
+  client.publish(`${topicPrefix}down`, JSON.stringify({ clientID, isDown }), {qos: 2});
 };
 const sendClearMessage = () => {
     client.publish(`${topicPrefix}clear`, JSON.stringify({ clientID }));
 };
 const sendSettingsMessage = () => {
-  client.publish(`${topicPrefix}settings`, JSON.stringify({ clientID, ...settings }));
+  client.publish(`${topicPrefix}settings`, JSON.stringify({ clientID, ...settings }), {qos: 2});
 };
 gui.onFinishChange(sendSettingsMessage);
