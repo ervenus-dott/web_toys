@@ -1,3 +1,4 @@
+const connectStatus = document.getElementById("connect-status");
 const downloadLink = document.getElementById("download-link");
 const canvas = document.getElementById("color-web");
 const context = canvas.getContext("2d");
@@ -175,6 +176,7 @@ const client = mqtt.connect("wss://mqtt-dashboard.com:8884/mqtt");
 const clientID = Math.floor(Math.random() * 1e18).toString(36).slice(2, 7);
 const topicPrefix = "ercillias_drawing_toy/";
 client.on("connect", () => {
+    connectStatus.innerText = "connected!";
     console.log("mqtt connected");
     client.subscribe(`${topicPrefix}#`, (err) => {
         if (err) {

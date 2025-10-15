@@ -20,6 +20,16 @@
         #pre-vis {
             pointer-events: none;
         }
+        #connect-status {
+            display: block;
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            line-height: 32px;
+            padding: 0 8px;
+            background-color: #8888;
+            border: 2px solid #AAAA;
+        }
         #download-link {
             display: block;
             position: absolute;
@@ -35,6 +45,7 @@
 <body>
     <canvas id="color-web"></canvas>
     <canvas id="pre-vis"></canvas>
+    <p id="connect-status">Connecting...</p>
     <a id="download-link" download="color_web.png" target="_blank">Download Canvas</a>
     <script src="https://unpkg.com/lil-gui@0.20.0/dist/lil-gui.umd.js"></script>
     <script src="https://unpkg.com/mqtt@5.14.1/dist/mqtt.min.js"></script>
