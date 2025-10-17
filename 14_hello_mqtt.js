@@ -12,6 +12,7 @@ let cx = 0;
 let cy = 0;
 let isTouchDown = false;
 let userMap = {};
+let eventList = [];
 
 function dlCanvas() {
   const base64ImageURL = canvas.toDataURL("image/png");
@@ -21,6 +22,7 @@ downloadLink.addEventListener("click", dlCanvas, false);
 
 const clearCanvas = () => {
     context.clearRect(0, 0, canvas.width, canvas.height);
+    eventList.length = 0;
 };
 const clearAndSendMessage = () => {
     clearCanvas()
@@ -32,7 +34,7 @@ const settings = {
   radialSymmetry: 6,
   brushSize: 10,
   currentColor: "#ff9922",
-  opacity: 0.3,
+  opacity: 0.1,
   clearCanvas: clearAndSendMessage,
 };
 var gui = new lil.GUI();
@@ -45,11 +47,6 @@ gui.add(settings, "brushSize", 3, 25).listen();
 gui.addColor(settings, "currentColor").listen();
 gui.add(settings, "opacity", 0, 1).listen();
 gui.add(settings, "clearCanvas").listen();
-// const handleColorChange = () => {
-//   sendSettingsMessage(settings.currentColor, settings.opacity);
-// };
-// colorController.onFinishChange(handleColorChange);
-// opacityController.onFinishChange(handleColorChange);
 let globalScale = 1;
 const resize = function () {
   const rect = canvas.getBoundingClientRect();
@@ -63,9 +60,9 @@ const resize = function () {
     canvas.height = height;
     canvasPreVis.width = width;
     canvasPreVis.height = height;
+    playBackEventList()
   }
 };
-resize();
 // important resize loop making sure that we have up to date height and width info
 
 var drawCircle = (vert, radius, color, context) => {
@@ -119,20 +116,27 @@ const drawFromSettings = function(settings) {
 const renderLoop = function (time) {
   requestAnimationFrame(renderLoop);
   resize();
-  contextPreVis.clearRect(0, 0, width, height);
+  drawCurrentState(true)
+};
+
+const drawCurrentState = (drawOverlay) => {
+  const scale = 1 / globalScale;
+  if (drawOverlay) {  
+    contextPreVis.clearRect(0, 0, width, height);
+    contextPreVis.save();
+    contextPreVis.translate(cx, cy);
+    contextPreVis.scale(scale, scale);
+    contextPreVis.restore();
+    return;
+  }
   context.save();
-  contextPreVis.save();
   // context.fillStyle = '#0001';
   // context.fillRect(0, 0, width, height);
   context.translate(cx, cy);
-  contextPreVis.translate(cx, cy);
-  const scale = 1 / globalScale;
   context.scale(scale, scale);
-  contextPreVis.scale(scale, scale);
   drawFromSettings(settings);
   Object.values(userMap).forEach(drawFromSettings)
   context.restore();
-  contextPreVis.restore();
 };
 requestAnimationFrame(renderLoop);
 var handleMouseMoveEvent = (event) => {
@@ -159,6 +163,9 @@ var handleMouseMoveEvent = (event) => {
     // console.log('what is difference', difference);
     settings.x = difference.x * globalScale;
     settings.y = difference.y * globalScale;
+    if (settings.isDown) {
+      drawCurrentState();
+    }
   sendMouseMoveMessage(settings.x, settings.y);
 };
 const handleOn = (mouseEvent) => {
@@ -178,6 +185,17 @@ canvas.addEventListener("mouseleave", handleOff);
 canvas.addEventListener("touchstop", handleOff);
 
 const client = mqtt.connect("wss://mqtt-dashboard.com:8884/mqtt");
+const sendAndLog = (topic, message, options) => {
+    const json = { clientID, ...message };
+    eventList.push([topic, json]);
+    client.publish(topic, JSON.stringify(json), options);
+}; 
+const playBackEventList = () => {
+  eventList.forEach(([topic, event]) => {
+    processEvent(topic, event);
+    drawCurrentState();
+  });
+};
 const clientID = Math.floor(Math.random() * 1e18).toString(36).slice(2, 7);
 const topicPrefix = 'ercillias_drawing_toy';
 const globalTopicPrefix = `${topicPrefix}/`;
@@ -206,7 +224,13 @@ client.on("message", (topic, message) => {
     if (json.clientID === clientID) {
         return;
         // ignore messages that we send
-    } else if (topic === `${globalTopicPrefix}move`) {
+    }
+    eventList.push([topic, json]);
+    processEvent(topic, json);
+    drawCurrentState();
+});
+const processEvent = (topic, json) => {
+    if (topic === `${globalTopicPrefix}move`) {
       const userSettings = userMap[json.clientID];
       if (userSettings) {
         userSettings.x = json.x;
@@ -221,35 +245,40 @@ client.on("message", (topic, message) => {
         clearCanvas();
     } else if (topic === `${globalTopicPrefix}hello`) {
         userMap[json.clientID] = json;
-        sendSettingsMessage(json.clientID);
+        sendPrivateSettingsMessage(json.clientID);
     } else if (topic.endsWith('settings')) {
         console.log('settings recieved from:', topic);
         userMap[json.clientID] = json;
         // colorController.setValue(json.color);
         // opacityController.setValue(json.opacity);
     }
+};
 
-});
 
 const sendMouseMoveMessage = (x, y) => {
-  client.publish(`${globalTopicPrefix}move`, JSON.stringify({ clientID, x, y }));
+  sendAndLog(`${globalTopicPrefix}move`, { x, y } );
 };
 const sendHelloMessage = () => {
-  client.publish(`${globalTopicPrefix}hello`, JSON.stringify({ clientID, ...settings }), {qos: 2});
+  sendAndLog(`${globalTopicPrefix}hello`, settings, {qos: 2});
 };
 const sendMouseDownMessage = (isDown) => {
-  client.publish(`${globalTopicPrefix}down`, JSON.stringify({ clientID, isDown }), {qos: 2});
+  sendAndLog(`${globalTopicPrefix}down`, { isDown }, {qos: 2});
 };
 const sendClearMessage = () => {
-    client.publish(`${globalTopicPrefix}clear`, JSON.stringify({ clientID }));
+  sendAndLog(`${globalTopicPrefix}clear`, { });
 };
-const sendSettingsMessage = (specificClientID) => {
-  console.log('sending settings to target:', specificClientID);
-  const topic = specificClientID ? `${topicPrefix}-${specificClientID}/settings` : `${globalTopicPrefix}settings`;
-  client.publish(topic, JSON.stringify({ clientID, ...settings }), {qos: 2});
+const sendPrivateSettingsMessage = (specificClientID) => {
+  const topic = `${topicPrefix}-${specificClientID}/settings`;
+  sendAndLog(topic, settings, {qos: 2});
+  console.log('what is the json settings object', JSON.stringify({ clientID, ...settings }));
+};
+const sendSettingsMessage = () => {
+  const topic = `${globalTopicPrefix}settings`;
+  sendAndLog(topic, settings, {qos: 2});
   console.log('what is the json settings object', JSON.stringify({ clientID, ...settings }));
 };
 gui.onFinishChange(() => {
   sendSettingsMessage()
 });
 
+resize();
