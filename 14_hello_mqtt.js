@@ -161,24 +161,21 @@ var handleMouseMoveEvent = (event) => {
     settings.y = difference.y * globalScale;
   sendMouseMoveMessage(settings.x, settings.y);
 };
+const handleOn = (mouseEvent) => {
+  settings.isDown = true;
+  sendMouseDownMessage(settings.isDown);
+}
+const handleOff = (mouseEvent) => {
+  settings.isDown = false;
+  sendMouseDownMessage(settings.isDown);
+}
 canvas.addEventListener("mousemove", handleMouseMoveEvent);
 canvas.addEventListener("touchmove", handleMouseMoveEvent);
-canvas.addEventListener("mousedown", (mouseEvent) => {
-  settings.isDown = true;
-  sendMouseDownMessage(settings.isDown);
-});
-canvas.addEventListener("mouseup", (mouseEvent) => {
-  settings.isDown = false;
-  sendMouseDownMessage(settings.isDown);
-});
-canvas.addEventListener("touchstart", (mouseEvent) => {
-  settings.isDown = true;
-  sendMouseDownMessage(settings.isDown);
-});
-canvas.addEventListener("touchstop", (mouseEvent) => {
-  settings.isDown = false;
-  sendMouseDownMessage(settings.isDown);
-});
+canvas.addEventListener("mousedown", handleOn);
+canvas.addEventListener("touchstart", handleOn);
+canvas.addEventListener("mouseup", handleOff);
+canvas.addEventListener("mouseleave", handleOff);
+canvas.addEventListener("touchstop", handleOff);
 
 const client = mqtt.connect("wss://mqtt-dashboard.com:8884/mqtt");
 const clientID = Math.floor(Math.random() * 1e18).toString(36).slice(2, 7);
