@@ -74,7 +74,7 @@ var drawCircle = (vert, radius, color, context) => {
   context.fillStyle = color;
   context.fill();
 };
-const drawMirrored = function (context, drawCallback) {
+const drawMirrored = function (context, drawCallback, settings) {
   context.save();
   drawCallback();
   if (settings.bilateralSymmetry) {
@@ -83,18 +83,21 @@ const drawMirrored = function (context, drawCallback) {
   }
   context.restore();
 };
-const drawRadial = function (context, drawCallback) {
+const drawRadial = function (context, drawCallback, settings) {
   const n = settings.radialSymmetry || 1;
   const radialSegment = tau / n;
   for (let i = 0; i < n; i += 1) {
     context.save();
     context.rotate(radialSegment * i);
-    drawMirrored(context, drawCallback);
+    drawMirrored(context, drawCallback, settings);
     context.restore();
   }
 };
 const drawFromSettings = function(settings) {
-  if (settings.glow) {context.globalCompositeOperation = "screen";}
+  context.save();
+  if (settings.glow) {
+    context.globalCompositeOperation = "screen";
+  } 
   const combinedColor = settings.currentColor +
     Math.round(settings.opacity * 255).toString(16).padStart(2, "0");
   // console.log('what is combined color', combinedColor);
@@ -105,11 +108,12 @@ const drawFromSettings = function(settings) {
   if (settings.isDown) {
     drawRadial(context, () => {
       drawCircle(mouseVert, settings.brushSize / 100, combinedColor, context);
-    });
+    }, settings);
   }
   drawRadial(contextPreVis, () => {
     drawCircle(mouseVert, settings.brushSize / 100, combinedColor, contextPreVis);
-  });
+  }, settings);
+  context.restore();
 }
 
 const renderLoop = function (time) {
@@ -200,7 +204,7 @@ client.on("error", (error) => {
 client.on("message", (topic, message) => {
     // message is Buffer
     const messageString = message.toString();
-    console.log("mqtt message recieved", topic, messageString);
+    // console.log("mqtt message recieved", topic, messageString);
     const json = JSON.parse(messageString);
     if (json.clientID === clientID) {
         return;
@@ -246,6 +250,7 @@ const sendSettingsMessage = (specificClientID) => {
   console.log('sending settings to target:', specificClientID);
   const topic = specificClientID ? `${topicPrefix}-${specificClientID}/settings` : `${globalTopicPrefix}settings`;
   client.publish(topic, JSON.stringify({ clientID, ...settings }), {qos: 2});
+  console.log('what is the json settings object', JSON.stringify({ clientID, ...settings }));
 };
 gui.onFinishChange(() => {
   sendSettingsMessage()
