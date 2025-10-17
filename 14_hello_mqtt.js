@@ -48,6 +48,7 @@ gui.addColor(settings, "currentColor").listen();
 gui.add(settings, "opacity", 0, 1).listen();
 gui.add(settings, "clearCanvas").listen();
 let globalScale = 1;
+let framesAtThisSize = 0;
 const resize = function () {
   const rect = canvas.getBoundingClientRect();
   if (width !== rect.width || height !== rect.height) {
@@ -60,7 +61,12 @@ const resize = function () {
     canvas.height = height;
     canvasPreVis.width = width;
     canvasPreVis.height = height;
-    playBackEventList()
+    framesAtThisSize = 0;
+    return;
+  }
+  framesAtThisSize += 1;
+  if (framesAtThisSize === 20) {
+    playBackEventList();
   }
 };
 // important resize loop making sure that we have up to date height and width info
@@ -196,6 +202,7 @@ const playBackEventList = () => {
     drawCurrentState();
   });
 };
+let connectedDrawUpdateState = false;
 const clientID = Math.floor(Math.random() * 1e18).toString(36).slice(2, 7);
 const topicPrefix = 'ercillias_drawing_toy';
 const globalTopicPrefix = `${topicPrefix}/`;
@@ -243,11 +250,25 @@ const processEvent = (topic, json) => {
         }
     } else if (topic === `${globalTopicPrefix}clear`) {
         clearCanvas();
-    } else if (topic === `${globalTopicPrefix}hello`) {
+    } 
+    else if (topic.endsWith('eventList')) {
+      if(!connectedDrawUpdateState){
+        connectedDrawUpdateState = true;
+        // let tempEventList = eventList;
+        eventList = [...json.eventList, ...eventList];
+        // console.log('what is mutated eventList', eventList);
+        playBackEventList();
+        // eventList = tempEventList;
+      }
+      // console.log('not needed');
+      return
+    }
+     else if (topic === `${globalTopicPrefix}hello`) {
         userMap[json.clientID] = json;
         sendPrivateSettingsMessage(json.clientID);
+        sendEventListMessage(json.clientID, eventList);
     } else if (topic.endsWith('settings')) {
-        console.log('settings recieved from:', topic);
+        // console.log('settings recieved from:', topic);
         userMap[json.clientID] = json;
         // colorController.setValue(json.color);
         // opacityController.setValue(json.opacity);
@@ -266,6 +287,11 @@ const sendMouseDownMessage = (isDown) => {
 };
 const sendClearMessage = () => {
   sendAndLog(`${globalTopicPrefix}clear`, { });
+};
+const sendEventListMessage = (specificClientID, eventList) => {
+  const topic = `${topicPrefix}-${specificClientID}/eventList`;
+  client.publish(topic, JSON.stringify({eventList}), {qos: 2});
+  // console.log('what is the sending eventList', eventList);
 };
 const sendPrivateSettingsMessage = (specificClientID) => {
   const topic = `${topicPrefix}-${specificClientID}/settings`;
