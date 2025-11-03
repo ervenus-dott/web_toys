@@ -9,7 +9,7 @@ let circleVert = [0, 30];
 let circleArray = [];
 
 const drawCircle = (vert, radius, color, context) => {
-    console.log('what is vert', vert);
+    // console.log('what is vert', vert);
     context.beginPath();
     context.arc(vert[0], vert[1], radius, 0, tau);
     context.fillStyle = color;
@@ -26,7 +26,28 @@ const drawArrayCircles = (array) => {
         drawCircle(element, 10, 'white', context);
     }
 };
+let loopActive = false;
+const loop = () => {
+    if (loopActive) {
+    requestAnimationFrame(loop);
+    }
+    clear()
+    circleArray.forEach(handleCicleUpdate);
+};
 
+const handleCicleUpdate = (circle) => {
+	circle[0] += (Math.random() - 0.5) * 10;
+	circle[1] += (Math.random() - 0.5) * 10;
+    drawCircle(circle, 10, 'white', context);
+};
+const loopSwitch = () => {
+    if (loopActive) {
+        loopActive = false;
+    } else {
+        loopActive = true;
+        loop();
+    }
+}
 for (let index = 0; index < columns; index++) {
     let xCoordinate = canvasDimensions.width / (columns + 1);
     let currentX = xCoordinate * (index + 1);
