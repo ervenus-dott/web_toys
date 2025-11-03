@@ -8,12 +8,23 @@ let canvasDimensions = canvas.getBoundingClientRect()
 let circleVert = [0, 30];
 let circleArray = [];
 
-var drawCircle = (vert, radius, color, context) => {
+const drawCircle = (vert, radius, color, context) => {
     console.log('what is vert', vert);
     context.beginPath();
     context.arc(vert[0], vert[1], radius, 0, tau);
     context.fillStyle = color;
     context.fill();
+};
+
+const clear = () => {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+};
+
+const drawArrayCircles = (array) => {
+    for (let index = 0; index < array.length; index++) {
+        const element = array[index];
+        drawCircle(element, 10, 'white', context);
+    }
 };
 
 for (let index = 0; index < columns; index++) {
@@ -34,14 +45,15 @@ var handleMouseMoveEvent = (event) => {
     // should prevent touch scrolling on mobile devices so we can read touch position while the user drags
     event.preventDefault();
     // clientX and clientY maybe empty if this is a touch event
-    var x = event.clientX;
-    var y = event.clientY;
+    var rect = event.target.getBoundingClientRect();
+    var x = event.clientX - rect.x;
+    var y = event.clientY - rect.y;
     // search for the touch data and use that if we've got it
     if (event.touches) {
         var touch = event.touches[0];
         if (touch) {
-            x = touch.clientX;
-            y = touch.clientY;
+            x = touch.clientX - rect.x;
+            y = touch.clientY - rect.y;
         };
     };
     console.log('what is x, y', x, y);
