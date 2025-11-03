@@ -6,16 +6,10 @@ let columns = 10;
 let rows = 20;
 let canvasDimensions = canvas.getBoundingClientRect()
 let circleVert = [0, 30];
-let circleArray = [[]];
+let circleArray = [];
 
 var drawCircle = (vert, radius, color, context) => {
-    let tempArray = [0, 0];
-    
-    tempArray[0] = vert[0];
-    tempArray[1] = vert[1];
-
-    circleArray.push(tempArray);
-    // console.log('what is vert', vert);
+    console.log('what is vert', vert);
     context.beginPath();
     context.arc(vert[0], vert[1], radius, 0, tau);
     context.fillStyle = color;
@@ -23,14 +17,17 @@ var drawCircle = (vert, radius, color, context) => {
 };
 
 for (let index = 0; index < columns; index++) {
-    const xCoordinate = canvasDimensions.width / (columns + 1);
-    const currentX = xCoordinate * (index + 1);
+    let xCoordinate = canvasDimensions.width / (columns + 1);
+    let currentX = xCoordinate * (index + 1);
     circleVert[0] = currentX;
     for (let index = 0; index < rows; index++) {
-    const yCoordinate = canvasDimensions.height / (rows + 1);
-    const currentY = yCoordinate * (index + 1);
+    let yCoordinate = canvasDimensions.height / (rows + 1);
+    let currentY = yCoordinate * (index + 1);
     circleVert[1] = currentY;
-        drawCircle(circleVert, 10, 'white', context);
+    let tempArray = [circleVert[0], circleVert[1]];
+    circleArray.push(tempArray);
+    tempArray = [0, 0];
+    drawCircle(circleVert, 10, 'white', context);
     };
 };
 var handleMouseMoveEvent = (event) => {
