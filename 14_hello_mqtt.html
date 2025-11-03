@@ -4,51 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>hello color web</title>
-    <link rel="stylesheet" href="style.css">
     <style>
-        body {
+        * {
+            margin: 0;
             padding: 0;
-        }
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
             border: none;
-            width: 100%;
+        }
+        html, body {
             height: 100%;
+            width: 100%;
         }
-        #pre-vis {
-            pointer-events: none;
-        }
-        #connect-status {
+        iframe {
             display: block;
-            position: absolute;
-            top: 16px;
-            left: 16px;
-            line-height: 32px;
-            padding: 0 8px;
-            background-color: #8888;
-            border: 2px solid #AAAA;
-        }
-        #download-link {
-            display: block;
-            position: absolute;
-            bottom: 16px;
-            left: 16px;
-            line-height: 32px;
-            padding: 0 8px;
-            background-color: #8888;
-            border: 2px solid #AAAA;
         }
     </style>
 </head>
 <body>
-    <canvas id="color-web"></canvas>
-    <canvas id="pre-vis"></canvas>
-    <p id="connect-status">Connecting...</p>
-    <a id="download-link" download="color_web.png" target="_blank">Download Canvas</a>
-    <script src="https://unpkg.com/lil-gui@0.20.0/dist/lil-gui.umd.js"></script>
-    <script src="https://unpkg.com/mqtt@5.14.1/dist/mqtt.min.js"></script>
-    <script src="14_hello_mqtt.js"></script>
+    <iframe
+        id="frame"
+        src=""
+        width="100%"
+        height="100%"
+    ></iframe>
+    <script>
+        const frame = document.getElementById('frame');
+        const baseUrl = './14_hello_mqtt-inner.html'
+        // heartbeat detection
+        let lastHeartbeat = 0;
+        window.addEventListener('message', (event) => {
+            if (event.origin !== window.location.origin) {
+                return;
+            }
+            lastHeartbeat = Date.now();
+        })
+        const testHeartbeat = () => {
+            const now = Date.now();
+            if(lastHeartbeat < now - 5000) {
+                console.log('it ded, reload')
+                frame.src = baseUrl + '?time=' + now;
+            }
+        }
+        testHeartbeat();
+        setInterval(
+            testHeartbeat,
+            5000,
+        );
+    </script>
 </body>
 </html>
