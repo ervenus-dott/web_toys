@@ -7,6 +7,27 @@ let rows = 20;
 let canvasDimensions = canvas.getBoundingClientRect()
 let circleVert = [0, 30];
 let circleArray = [];
+const startup = () => {
+    //`mousemove`, not `mouseover`
+	document.getElementById("circle-grid-outlines").onmousemove = mouseMove;
+    
+	loop();
+};
+let mouseX = 1;
+let mouseY = 1;
+let ballX = 1;
+let ballY = 1;
+let ballRadius = 20;
+
+window.onload = startup;
+
+function mouseMove(mouseMoveEvent) {
+	// console.log('what is mouse move event?', mouseMoveEvent);
+	const canvasRect = mouseMoveEvent.target.getBoundingClientRect();
+	// console.log('what is canvasRect?', canvasRect);
+	mouseX = mouseMoveEvent.clientX - canvasRect.x;
+	mouseY = mouseMoveEvent.clientY - canvasRect.y;
+}
 
 const drawCircle = (vert, radius, color, context) => {
     // console.log('what is vert', vert);
@@ -26,20 +47,51 @@ const drawArrayCircles = (array) => {
         drawCircle(element, 10, 'white', context);
     }
 };
-let loopActive = false;
+const moveBall = () => {
+	//get the distance between the mouse and the ball on both axes
+	//walk only the an eight of the distance to create a smooth fadeout
+	let dx = (mouseX - ballX) * .125;
+	let dy = (mouseY - ballY) * .125;
+	//calculate the distance this would move ...
+	let distance = Math.sqrt(dx * dx + dy * dy);
+	//... and cap it at 5px
+	if (distance > 5) {
+		dx *= 20 / distance;
+		dy *= 20 / distance;
+	}
+
+	//now move
+	ballX += dx;
+	ballY += dy;
+
+
+
+	context.beginPath();
+	context.arc(ballX, ballY, ballRadius, 0, 2 * Math.PI);
+	context.fillStyle = 'hsla(25, 100%, 60%, 0.5)';
+	context.fill();
+	context.lineWidth = 5;
+	context.strokeStyle = 'hsl(25, 100%, 60%)';
+	context.stroke();
+}
+
+
+let loopActive = true;
+const handleCicleUpdate = (circle) => {
+    circle[0] += (Math.random() - 0.5) * 10;
+    circle[1] += (Math.random() - 0.5) * 10;
+    drawCircle(circle, 10, 'white', context);
+};
 const loop = () => {
     if (loopActive) {
     requestAnimationFrame(loop);
     }
     clear()
+    moveBall()
     circleArray.forEach(handleCicleUpdate);
 };
+loop();
 
-const handleCicleUpdate = (circle) => {
-	circle[0] += (Math.random() - 0.5) * 10;
-	circle[1] += (Math.random() - 0.5) * 10;
-    drawCircle(circle, 10, 'white', context);
-};
 const loopSwitch = () => {
     if (loopActive) {
         loopActive = false;
@@ -62,16 +114,16 @@ for (let index = 0; index < columns; index++) {
     drawCircle(circleVert, 10, 'white', context);
     };
 };
-var handleMouseMoveEvent = (event) => {
+const handleMouseMoveEvent = (event) => {
     // should prevent touch scrolling on mobile devices so we can read touch position while the user drags
     event.preventDefault();
     // clientX and clientY maybe empty if this is a touch event
-    var rect = event.target.getBoundingClientRect();
-    var x = event.clientX - rect.x;
-    var y = event.clientY - rect.y;
+    const rect = event.target.getBoundingClientRect();
+    let x = event.clientX - rect.x;
+    let y = event.clientY - rect.y;
     // search for the touch data and use that if we've got it
     if (event.touches) {
-        var touch = event.touches[0];
+        let touch = event.touches[0];
         if (touch) {
             x = touch.clientX - rect.x;
             y = touch.clientY - rect.y;
