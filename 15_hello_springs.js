@@ -14,8 +14,11 @@ let springedCircle = {
 let spring = 0.1;
 let velocityX = 0;
 let velocityY = 0;
-let velocityLostToFriction = 0.995;
+let velocityLostToFriction = 0.95;
+let gravity = 5;
 let resetSpringData = false;
+let mouseX = 0;
+let mouseY = 1;
 
 reset.addEventListener('click', () => {
     resetSpringData = true;
@@ -24,7 +27,13 @@ reset.addEventListener('click', () => {
     velocityX = 0;
     velocityY = 0;
 });
-
+canvas.addEventListener('mousemove', (mouseEvent) => {
+    let rect = canvas.getBoundingClientRect();
+    // console.log('what is rect', rect);
+    mouseX = mouseEvent.clientX - rect.x;
+    mouseY = mouseEvent.clientY - rect.y;
+    // console.log('what is mouseX, mouseY', mouseX, mouseY);
+});
 
 const drawCircle = (x, y, color, size) => {
     context.beginPath();
@@ -35,10 +44,17 @@ const drawCircle = (x, y, color, size) => {
     context.fillStyle = color;
     context.fill();
 };
-
+const drawline = (orginX, orginY, endX, endY, color, size) => {
+    context.beginPath();
+    context.lineWidth = size / 10;
+    context.strokeStyle = color;
+    context.moveTo(orginX, orginY);
+    context.lineTo(endX, endY);
+    context.stroke();
+};
 const springMotionHandler = () => {
-    let distanceToTargetX = canvasCenter[0] - springedCircle.x;
-    let distanceToTargetY = canvasCenter[1] - springedCircle.y;
+    let distanceToTargetX = mouseX - springedCircle.x;
+    let distanceToTargetY = mouseY - springedCircle.y;
     let accelerationX = distanceToTargetX * spring;
     let accelerationY = distanceToTargetY * spring;
     if (resetSpringData) {
@@ -50,16 +66,19 @@ const springMotionHandler = () => {
     }
     velocityX += accelerationX;
     velocityY += accelerationY;
+    velocityY += gravity;
     velocityX *= velocityLostToFriction;
     velocityY *= velocityLostToFriction;
+    // console.log('what is velocityX, velocityY', velocityX, velocityY);
     springedCircle.x += velocityX;
-    springedCircle.y += velocityX;
+    springedCircle.y += velocityY;
+    drawline(springedCircle.x, springedCircle.y, mouseX, mouseY, springedCircle.color, springedCircle.size);
 };
 
 const loop = () => {
     requestAnimationFrame(loop);
-    springMotionHandler();
     context.clearRect(0, 0, canvas.width, canvas.height);
+    springMotionHandler();
     drawCircle(springedCircle.x, springedCircle.y, springedCircle.color, springedCircle.size);
 };
 loop();
