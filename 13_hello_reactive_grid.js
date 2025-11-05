@@ -2,21 +2,18 @@ const canvas = document.getElementById("circle-grid-outlines");
 const context = canvas.getContext("2d");
 const tau = Math.PI * 2;
 
-let columns = 2;
-let rows = 4;
+let columns = 10;
+let rows = 20;
 let canvasDimensions = canvas.getBoundingClientRect()
-let circleVert = [0, 30];
 let circleArray = [];
 const startup = () => {
     //`mousemove`, not `mouseover`
 	document.getElementById("circle-grid-outlines").onmousemove = mouseMove;
-    
-	loop();
 };
 let mouseX = 1;
 let mouseY = 1;
 let ballCoords = [1, 1];
-let ballRadius = 40;
+let ballRadius = 80;
 
 window.onload = startup;
 
@@ -56,29 +53,48 @@ const moveBall = () => {
 	context.strokeStyle = 'hsl(25, 100%, 60%)';
 	context.stroke();
 }
-
-
+let spring = 0.1;
+let velocityLostToFriction = 0.95;
 let loopActive = true;
-const handleCicleUpdate = (circle) => {
+const springMotionHandler = (circle) => {
+    circle.distanceToTargetX = circle.orginX - circle.x;
+    circle.distanceToTargetY = circle.orginY - circle.y;
+    circle.accelerationX = circle.distanceToTargetX * spring;
+    circle.accelerationY = circle.distanceToTargetY * spring;
+    circle.velocityX += circle.accelerationX;
+    circle.velocityY += circle.accelerationY;
+    // velocityY += gravity;
+    circle.velocityX *= velocityLostToFriction;
+    circle.velocityY *= velocityLostToFriction;
+    circle.x += circle.velocityX;
+    circle.y += circle.velocityY;
+};
+const handleCircleUpdate = (circle) => {
     if (
-        circle[0] + 5 > ballCoords[0] - ballRadius &&
-        circle[0] - 5 < ballCoords[0] + ballRadius &&
-        circle[1] + 5 > ballCoords[1] - ballRadius &&
-        circle[1] - 5 < ballCoords[1] + ballRadius
+        circle.x + 5 > ballCoords[0] - ballRadius &&
+        circle.x - 5 < ballCoords[0] + ballRadius &&
+        circle.y + 5 > ballCoords[1] - ballRadius &&
+        circle.y - 5 < ballCoords[1] + ballRadius
     ) {
-        circle[0] += (Math.random() - 0.5) * 10;
-        circle[1] += (Math.random() - 0.5) * 10;
-
+        // console.log('what are circle and ballCoords', circle, ballCoords);
+        var diffX = circle.x - ballCoords[0];
+        var diffY = circle.y - ballCoords[1];
+        const angle = Math.atan2(diffY, diffX);
+        const distance = Math.sqrt(diffX * diffX + diffY * diffY);
+        circle.x += Math.sin(angle) * (distance - ballRadius);
+        circle.y += Math.cos(angle) * (distance - ballRadius);
     }
-    drawCircle(circle, 10, 'white', context);
+    // springMotionHandler(circle);
+    const circleVerts = [circle.x, circle.y];
+    drawCircle(circleVerts, 10, 'white', context);
 };
 
-const loopSwitch = () => {
-    if (loopActive) {
-        loopActive = false;
-    } else {
-        loopActive = true;
-        loop();
+    const loopSwitch = () => {
+        if (loopActive) {
+            loopActive = false;
+        } else {
+            loopActive = true;
+            loop();
     }
 }
 const drawAndLogCircles = () => {
@@ -86,15 +102,26 @@ const drawAndLogCircles = () => {
     for (let index = 0; index < columns; index++) {
         let xCoordinate = canvasDimensions.width / (columns + 1);
         let currentX = xCoordinate * (index + 1);
-        circleVert[0] = currentX;
         for (let index = 0; index < rows; index++) {
-        let yCoordinate = canvasDimensions.height / (rows + 1);
-        let currentY = yCoordinate * (index + 1);
-        circleVert[1] = currentY;
-        let tempArray = [circleVert[0], circleVert[1]];
-        circleArray.push(tempArray);
-        tempArray = [0, 0];
-        drawCircle(circleVert, 10, 'white', context);
+            let yCoordinate = canvasDimensions.height / (rows + 1);
+            let currentY = yCoordinate * (index + 1);
+            // console.log('what is currentY', currentY);
+            let tempObject = {
+                x: currentX,
+                y: currentY,
+                orginX: currentX,
+                orginY: currentY,
+                velocityX: 0,
+                velocityY: 0,
+                distanceToTargetX: 0,
+                distanceToTargetY: 0,
+                accelerationX: 0,
+                accelerationY: 0,
+            };
+            // console.log('what is tempObject', tempObject);
+            circleArray.push(tempObject);
+            let circleVert = [currentX, currentY];
+            drawCircle(circleVert, 10, 'white', context);
         };
     };
 };
@@ -104,8 +131,9 @@ const loop = () => {
     requestAnimationFrame(loop);
     }
     clear()
-    circleArray.forEach(handleCicleUpdate);
-    moveBall()
+    circleArray.forEach(handleCircleUpdate);
+    circleArray.forEach(springMotionHandler);
+    moveBall();
 };
 loop();
 
