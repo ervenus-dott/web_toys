@@ -2,6 +2,40 @@ const canvas = document.getElementById("circle-grid-outlines");
 const context = canvas.getContext("2d");
 const tau = Math.PI * 2;
 
+const soundPaths = [
+	'/chords/a_major_7th.mp3',
+	'/chords/b_major_7th.mp3',
+	'/chords/c_sharp_minor_7th.mp3',
+	'/chords/e_major_7th.mp3',
+    '/chords/a_major_short.mp3',
+    '/chords/b_major_short.mp3',
+    '/chords/c_sharp_minor_short.mp3',
+    '/chords/e_major_short.mp3',
+];
+let soundSpringUrls = [];
+
+const loadAudioDataBuffer = function (path) {
+	return fetch(path)
+		.then(function (request) {
+			console.log('what is request?', request);
+			return request.blob();
+		})
+		.then(function (blob) {
+			return URL.createObjectURL(blob);
+		});
+};
+const soundSpringUrlPromises = soundPaths.map(loadAudioDataBuffer);
+
+Promise.all(soundSpringUrlPromises).then(function (allTheLoadedThings) {
+	console.log('WHat is allTheLoadedThings', allTheLoadedThings);
+	soundSpringUrls = allTheLoadedThings;
+    circleArray.forEach((circle) => {
+        circle.audioElement.src = allTheLoadedThings[circle.soundIndex % allTheLoadedThings.length];
+        circle.audioElement.load();
+    })
+});
+
+
 let columns = 10;
 let rows = 20;
 let canvasDimensions = canvas.getBoundingClientRect()
@@ -13,7 +47,7 @@ const startup = () => {
 let mouseX = 1;
 let mouseY = 1;
 let ballCoords = [1, 1];
-let ballRadius = 80;
+let ballRadius = 40;
 
 window.onload = startup;
 
@@ -54,7 +88,7 @@ const moveBall = () => {
 	context.stroke();
 }
 let spring = 0.1;
-let velocityLostToFriction = 0.95;
+let lackOfFriction = 0.75;
 let loopActive = true;
 const springMotionHandler = (circle) => {
     circle.distanceToTargetX = circle.orginX - circle.x;
@@ -64,8 +98,8 @@ const springMotionHandler = (circle) => {
     circle.velocityX += circle.accelerationX;
     circle.velocityY += circle.accelerationY;
     // velocityY += gravity;
-    circle.velocityX *= velocityLostToFriction;
-    circle.velocityY *= velocityLostToFriction;
+    circle.velocityX *= lackOfFriction;
+    circle.velocityY *= lackOfFriction;
     circle.x += circle.velocityX;
     circle.y += circle.velocityY;
 };
@@ -83,6 +117,10 @@ const handleCircleUpdate = (circle) => {
         const distance = Math.sqrt(diffX * diffX + diffY * diffY);
         circle.x += Math.sin(angle) * (distance - ballRadius);
         circle.y += Math.cos(angle) * (distance - ballRadius);
+        if (!circle.isPlaying) {
+            circle.isPlaying = true;
+            circle.audioElement.play();
+        }
     }
     // springMotionHandler(circle);
     const circleVerts = [circle.x, circle.y];
@@ -99,14 +137,14 @@ const handleCircleUpdate = (circle) => {
 }
 const drawAndLogCircles = () => {
     circleArray = [];
-    for (let index = 0; index < columns; index++) {
-        let xCoordinate = canvasDimensions.width / (columns + 1);
-        let currentX = xCoordinate * (index + 1);
-        for (let index = 0; index < rows; index++) {
-            let yCoordinate = canvasDimensions.height / (rows + 1);
-            let currentY = yCoordinate * (index + 1);
+    let xCoordinate = canvasDimensions.width / (columns + 1);
+    let yCoordinate = canvasDimensions.height / (rows + 1);
+    for (let x = 0; x < columns; x++) {
+        const currentX = xCoordinate * (x + 1);
+        for (let y = 0; y < rows; y++) {
+            const currentY = yCoordinate * (y + 1);
             // console.log('what is currentY', currentY);
-            let tempObject = {
+            const circle = {
                 x: currentX,
                 y: currentY,
                 orginX: currentX,
@@ -117,10 +155,23 @@ const drawAndLogCircles = () => {
                 distanceToTargetY: 0,
                 accelerationX: 0,
                 accelerationY: 0,
+                soundIndex: x,
+                soundPitch: 1 + ((y * 2) / rows),
+                audioElement: new Audio(),
+                isPlaying: false,
             };
+            circle.audioElement.preservesPitch = false;
+            circle.audioElement.volume = 0.2;
+            circle.audioElement.addEventListener('ended', () => {
+                circle.isPlaying = false;
+            })
+            circle.audioElement.addEventListener('canplay', () => {
+                // console.log('has it loaded', circle.audioElement);
+                circle.audioElement.playbackRate = circle.soundPitch;
+            })
             // console.log('what is tempObject', tempObject);
-            circleArray.push(tempObject);
-            let circleVert = [currentX, currentY];
+            circleArray.push(circle);
+            const circleVert = [currentX, currentY];
             drawCircle(circleVert, 10, 'white', context);
         };
     };
