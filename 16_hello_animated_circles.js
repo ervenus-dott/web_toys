@@ -9,6 +9,8 @@ const drawCircle = (vert, radius, color) => {
     context.fillStyle = color;
     context.fill();
 };
+const image = new Image();
+image.src = 'https://icelandictimes.com/cdn-cgi/image/width=768,quality=90,format=auto,onerror=redirect,metadata=none/wp-content/uploads/2023/11/Svarthvitur-litur_58P6721-768x512.jpg';
 
 const loop = () => {
     requestAnimationFrame(loop);
@@ -27,11 +29,16 @@ const loop = () => {
     }
     context.globalCompositeOperation = 'exclusion';
     context.fillStyle = 'white';
+    if (image.complete) {
+        context.drawImage(image, -150, 0, canvas.width * 1.5, canvas.height);
+    }
     for (let index = 0; index < 20; index++) {
         const radius = circleSize * 2 + (index * -100);
         context.fillRect(0, canvas.height / 2 - radius, canvas.width, Math.max(0, radius * 2));
-    }
-    // context.fillRect(0, canvas.height / 4, canvas.width, canvas.height / 2);
+    };
+    context.globalCompositeOperation = 'overlay';
+    context.fillStyle = '#0d445eff';
+    context.fillRect(0, 0, canvas.width, canvas.height);
     context.restore();
 };
 loop();
