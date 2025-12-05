@@ -27,7 +27,11 @@ const loop = () => {
     }
     context.globalCompositeOperation = 'exclusion';
     context.fillStyle = 'white';
-    context.fillRect(0, canvas.height / 4, canvas.width, canvas.height / 2);
+    for (let index = 0; index < 20; index++) {
+        const radius = circleSize * 2 + (index * -100);
+        context.fillRect(0, canvas.height / 2 - radius, canvas.width, Math.max(0, radius * 2));
+    }
+    // context.fillRect(0, canvas.height / 4, canvas.width, canvas.height / 2);
     context.restore();
 };
 loop();
