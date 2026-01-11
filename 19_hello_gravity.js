@@ -19,7 +19,7 @@ for (var i = 0; i < numParticles; i++) {
         vy: 0,
         color: 'white',
         // size: 10,
-        size: size / 100,
+        size: size,
         mass: size,
     };
     particles.push(particle);
