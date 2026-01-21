@@ -1,7 +1,7 @@
 const canvas = document.getElementById("circle-holder");
 const context = canvas.getContext("2d");
 const tau = Math.PI * 2;
-// const numParticles = 3
+const numParticles = 26
 let particles = [{
     x: 137,
     y: 251,
@@ -32,21 +32,21 @@ const drawCircle = ({x, y, size, color}) => {
     context.fill();
 };
 
-// for (var i = 0; i < numParticles; i++) {
-//     size = Math.random() * 25 + 5;
-//     const particle = {
-//         x: Math.random() * canvas.width,
-//         y: Math.random() * canvas.height,
-//         vx: 0,
-//         vy: 0,
-//         color: 'white',
-//         // size: 10,
-//         size: size,
-//         mass: size,
-//         stayStill: false,
-//     };
-//     particles.push(particle);
-// };
+for (var i = 0; i < numParticles; i++) {
+    size = Math.random() * 25 + 5;
+    const particle = {
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: 0,
+        vy: 0,
+        color: 'white',
+        // size: 10,
+        size: size,
+        mass: size,
+        stayStill: false,
+    };
+    particles.push(particle);
+};
 const checkCollision = (ball0, ball1) => {
     var dx = ball1.x - ball0.x;
     var dy = ball1.y - ball0.y;
