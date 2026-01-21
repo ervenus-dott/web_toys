@@ -1,7 +1,7 @@
 const canvas = document.getElementById("circle-holder");
 const context = canvas.getContext("2d");
 const tau = Math.PI * 2;
-const numParticles = 26
+const numParticles = 15
 let particles = [{
     x: 137,
     y: 251,
