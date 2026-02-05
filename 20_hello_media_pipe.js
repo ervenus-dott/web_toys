@@ -128,8 +128,19 @@ async function predictWebcam() {
       drawLandmarks(canvasCtx, landmarks, { color: "#FF0000", lineWidth: 2 });
       const center = getCenterBetweenIndexAndThumb(landmarks);
       console.log('what is center, landmarks[4], landmarks[8]', center, landmarks[4], landmarks[8]);
-      canvasCtx.fillStyle = '#fff';
-      canvasCtx.fillRect((center[0]*canvas.width)-5, (center[1]*canvas.height)-5, 10, 10);
+      const center2dCoords = [(center[0]*canvas.width)-5, (center[1]*canvas.height)-5];
+      const thumb2dCoords = [landmarks[4].x * canvas.width, landmarks[4].y * canvas.height];
+      const pointer2dCoords = [landmarks[8].x * canvas.width, landmarks[8].y * canvas.height];
+      const pointerAndThumbDifferencetoRadius = (glMatrix.vec2.distance(thumb2dCoords, pointer2dCoords))/2
+      console.log('what is center2dCoords, pointerAndThumbDifferencetoRadius', center2dCoords, pointerAndThumbDifferencetoRadius);
+      canvasCtx.beginPath();
+      canvasCtx.arc(center2dCoords[0], center2dCoords[1], pointerAndThumbDifferencetoRadius, 0, 2 * Math.PI);
+      canvasCtx.fillStyle = '#ffffff76';
+      canvasCtx.fill();
+      canvasCtx.beginPath();
+      canvasCtx.fillStyle = '#07043a';
+      canvasCtx.fillRect(center2dCoords[0], center2dCoords[1], 10, 10);
+      canvasCtx.fill();
     }
   }
   canvasCtx.restore();
