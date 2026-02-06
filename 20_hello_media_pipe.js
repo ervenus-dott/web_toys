@@ -88,13 +88,16 @@ function enableCam(event) {
     video.addEventListener("loadeddata", predictWebcam);
   });
 }
-const getCenterBetweenIndexAndThumb = (landmarks) => {
+const getCenterBetweenIndexAndThumb = (landmarks, canvas) => {
     const thumb = landmarks[4];
     const index = landmarks[8];
-    const thumbVec = [thumb.x, thumb.y, thumb.z];
-    const indexVec = [index.x, index.y, index.z];
+    const thumbVec = [thumb.x * canvas.width, thumb.y * canvas.height, thumb.z * canvas.width];
+    const indexVec = [index.x * canvas.width, index.y * canvas.height, index.z * canvas.width];
     const diff = glMatrix.vec3.sub([], thumbVec, indexVec);
-    return glMatrix.vec3.scaleAndAdd(diff, indexVec, diff, 0.5);
+    return {
+      center: glMatrix.vec3.scaleAndAdd([], indexVec, diff, 0.5),
+      diff,
+    }
 };
 
 let lastVideoTime = -1;
@@ -126,20 +129,16 @@ async function predictWebcam() {
         lineWidth: 5
       });
       drawLandmarks(canvasCtx, landmarks, { color: "#FF0000", lineWidth: 2 });
-      const center = getCenterBetweenIndexAndThumb(landmarks);
-      console.log('what is center, landmarks[4], landmarks[8]', center, landmarks[4], landmarks[8]);
-      const center2dCoords = [(center[0]*canvas.width)-5, (center[1]*canvas.height)-5];
-      const thumb2dCoords = [landmarks[4].x * canvas.width, landmarks[4].y * canvas.height];
-      const pointer2dCoords = [landmarks[8].x * canvas.width, landmarks[8].y * canvas.height];
-      const pointerAndThumbDifferencetoRadius = (glMatrix.vec2.distance(thumb2dCoords, pointer2dCoords))/2
-      console.log('what is center2dCoords, pointerAndThumbDifferencetoRadius', center2dCoords, pointerAndThumbDifferencetoRadius);
+      const {center, diff} = getCenterBetweenIndexAndThumb(landmarks, canvas);
+      const radius = (glMatrix.vec3.length(diff))/2
+      console.log('what is radius, diff, center, landmarks[4], landmarks[8]', radius, diff, center, landmarks[4], landmarks[8]);
       canvasCtx.beginPath();
-      canvasCtx.arc(center2dCoords[0], center2dCoords[1], pointerAndThumbDifferencetoRadius, 0, 2 * Math.PI);
+      canvasCtx.arc(center[0], center[1], radius, 0, 2 * Math.PI);
       canvasCtx.fillStyle = '#ffffff76';
       canvasCtx.fill();
       canvasCtx.beginPath();
       canvasCtx.fillStyle = '#07043a';
-      canvasCtx.fillRect(center2dCoords[0], center2dCoords[1], 10, 10);
+      canvasCtx.fillRect(center[0] - 5, center[1] - 5, 10, 10);
       canvasCtx.fill();
     }
   }
