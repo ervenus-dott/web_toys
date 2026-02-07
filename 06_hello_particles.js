@@ -1,5 +1,3 @@
-var canvas = document.getElementById("toy-canvas");
-var context = canvas.getContext('2d');
 var tau = Math.PI * 2;
 
 var drawCircle = ({pos, radius, lineWidth = 10, color, fill = false}) => {
@@ -146,15 +144,6 @@ var spawnParticlesAtPosition = function(pos) {
         particles.push(particle);
     }
 }
-canvas.addEventListener('click', function(clickEvent){
-    var rect = clickEvent.target.getBoundingClientRect();
-    var pos = [
-        clickEvent.clientX - rect.x,
-        clickEvent.clientY - rect.y
-    ];
-    spawnParticlesAtPosition(pos);
-    // console.log('what is difference', coords);
-});
 var gradient = [
     [1, 0.5, 0, 0, 0],
     [1, 0.5, 0, 1, 0.159],
@@ -163,16 +152,3 @@ var gradient = [
     [0.044487, 0.0495, 0.928845, 0, 1],
 ];
 
-var lastTime = 0;
-var animate = function(time) {
-    requestAnimationFrame(animate);
-    // context.globalCompositeOperation = 'source-over';
-    context.fillStyle = `#0008`
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    var delta = (time - lastTime) / 1000;
-    // context.globalCompositeOperation = 'lighter';
-    tickParticles(delta);
-    lastTime = time;
-}
-requestAnimationFrame(animate)
-spawnParticlesAtPosition([175, 124])

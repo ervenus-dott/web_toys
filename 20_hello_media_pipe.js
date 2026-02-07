@@ -39,7 +39,6 @@ const createHandLandmarker = async () => {
     runningMode: runningMode,
     numHands: 2
   });
-  demosSection.classList.remove("invisible");
 };
 createHandLandmarker();
 
@@ -102,8 +101,9 @@ const getCenterBetweenIndexAndThumb = (landmarks, canvas) => {
 
 let lastVideoTime = -1;
 let results = undefined;
-console.log(video);
-async function predictWebcam() {
+let lastTime = 0;
+const handSpamPreventionFlags = [];
+async function predictWebcam(time) {
   canvasElement.style.width = video.videoWidth;;
   canvasElement.style.height = video.videoHeight;
   canvasElement.width = video.videoWidth;
@@ -123,7 +123,7 @@ async function predictWebcam() {
   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
   if (results.landmarks?.length) {
     console.log('what is results.landmarks', results.landmarks);
-    for (const landmarks of results.landmarks) {
+    for (const [index, landmarks] of results.landmarks.entries()) {
       drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
         color: "#00FF00",
         lineWidth: 5
@@ -131,6 +131,13 @@ async function predictWebcam() {
       drawLandmarks(canvasCtx, landmarks, { color: "#FF0000", lineWidth: 2 });
       const {center, diff} = getCenterBetweenIndexAndThumb(landmarks, canvas);
       const radius = (glMatrix.vec3.length(diff))/2
+      if (radius > 100 && !handSpamPreventionFlags[index]) {
+        window.spawnParticlesAtPosition(center);
+        handSpamPreventionFlags[index] = true;
+      } else if (radius <= 100) {
+        handSpamPreventionFlags[index] = false;
+      }
+      console.log('what is handParticleFlags', handSpamPreventionFlags);
       console.log('what is radius, diff, center, landmarks[4], landmarks[8]', radius, diff, center, landmarks[4], landmarks[8]);
       canvasCtx.beginPath();
       canvasCtx.arc(center[0], center[1], radius, 0, 2 * Math.PI);
@@ -148,4 +155,8 @@ async function predictWebcam() {
   if (webcamRunning === true) {
     window.requestAnimationFrame(predictWebcam);
   }
+  const delta = (time - lastTime) / 1000;
+  // context.globalCompositeOperation = 'lighter';
+  tickParticles(delta);
+  lastTime = time;
 }

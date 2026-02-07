@@ -26,6 +26,35 @@
     <script src="https://unpkg.com/lil-gui@0.20.0/dist/lil-gui.umd.js"></script>
     <script src="draw_angled_arrow.js"></script>
     <script src="linear_gradient.js"></script>
+    <script>
+        var canvas = document.getElementById("toy-canvas");
+        var context = canvas.getContext('2d');
+    </script>
     <script src="06_hello_particles.js"></script>
+    <script>
+        canvas.addEventListener('click', function(clickEvent){
+            var rect = clickEvent.target.getBoundingClientRect();
+            var pos = [
+                clickEvent.clientX - rect.x,
+                clickEvent.clientY - rect.y
+            ];
+            spawnParticlesAtPosition(pos);
+            // console.log('what is difference', coords);
+        });
+
+        var lastTime = 0;
+        var animate = function(time) {
+            requestAnimationFrame(animate);
+            // context.globalCompositeOperation = 'source-over';
+            context.fillStyle = `#0008`
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            var delta = (time - lastTime) / 1000;
+            // context.globalCompositeOperation = 'lighter';
+            tickParticles(delta);
+            lastTime = time;
+        }
+        requestAnimationFrame(animate)
+        spawnParticlesAtPosition([175, 124])
+    </script>
 </body>
 </html>
