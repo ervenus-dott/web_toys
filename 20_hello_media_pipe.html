@@ -9,12 +9,12 @@
 <body>
     <button id="record-button">record</button>
     <button id="webcamButton">enable webcam</button>
-    <div>
+    <div style="transform:scaleX(-1)">
         <video 
-        id="webcam" 
-        style="position: absolute; border: 1px solid transparent; z-index: -1;"
-        autoplay 
-        playsinline
+            id="webcam" 
+            style="position: absolute; border: 1px solid transparent; z-index: -1;"
+            autoplay 
+            playsinline
         ></video>
         <canvas id="output_canvas" width="500" height="500"></canvas>
     </div>

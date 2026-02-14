@@ -11,6 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+settings.showOutlines = true;
+gui.add(settings, 'showOutlines');
+settings.debugCircle = true;
+gui.add(settings, 'debugCircle');
+settings.sizeThreshold = 0.5;
+gui.add(settings, 'sizeThreshold', 0, 1, 0.01);
 
 import {
   HandLandmarker,
@@ -37,7 +43,7 @@ const createHandLandmarker = async () => {
       delegate: "GPU"
     },
     runningMode: runningMode,
-    numHands: 2
+    numHands: 2,
   });
 };
 createHandLandmarker();
@@ -64,7 +70,7 @@ if (hasGetUserMedia()) {
 // Enable the live webcam view and start detection.
 function enableCam(event) {
   if (!handLandmarker) {
-    console.log("Wait! objectDetector not loaded yet.");
+    // console.log("Wait! objectDetector not loaded yet.");
     return;
   }
 
@@ -87,16 +93,31 @@ function enableCam(event) {
     video.addEventListener("loadeddata", predictWebcam);
   });
 }
+const landmarkToVec3 = (landmark) => [
+  landmark.x * canvas.width,
+  landmark.y * canvas.height,
+  landmark.z * canvas.width,
+];
+// docs that has the diagram for the hand ideces
+// https://chuoling.github.io/mediapipe/solutions/hands#javascript-solution-api
 const getCenterBetweenIndexAndThumb = (landmarks, canvas) => {
-    const thumb = landmarks[4];
-    const index = landmarks[8];
-    const thumbVec = [thumb.x * canvas.width, thumb.y * canvas.height, thumb.z * canvas.width];
-    const indexVec = [index.x * canvas.width, index.y * canvas.height, index.z * canvas.width];
+    const thumbVec = landmarkToVec3(landmarks[4]);
+    const indexVec = landmarkToVec3(landmarks[8]);
     const diff = glMatrix.vec3.sub([], thumbVec, indexVec);
     return {
       center: glMatrix.vec3.scaleAndAdd([], indexVec, diff, 0.5),
       diff,
     }
+};
+const getScaleAverage = (landmarks) => {
+    const wristVec = landmarkToVec3(landmarks[0]);
+    const indexKnuckleVec = landmarkToVec3(landmarks[5]);
+    const pinkieKnuckleVec = landmarkToVec3(landmarks[17]);
+    const diff1 = glMatrix.vec3.dist(wristVec, indexKnuckleVec);
+    const diff2 = glMatrix.vec3.dist(indexKnuckleVec, pinkieKnuckleVec);
+    const diff3 = glMatrix.vec3.dist(pinkieKnuckleVec, wristVec);
+    const diffAverage = (diff1 + diff2 + diff3)/3;
+    return diffAverage;
 };
 
 let lastVideoTime = -1;
@@ -122,33 +143,41 @@ async function predictWebcam(time) {
   canvasCtx.save();
   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
   if (results.landmarks?.length) {
-    console.log('what is results.landmarks', results.landmarks);
+    // console.log('what is results.landmarks', results.landmarks);
     for (const [index, landmarks] of results.landmarks.entries()) {
-      drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
+      const landmarkAverages = getScaleAverage(landmarks)
+      if (settings.showOutlines){
+        drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
         color: "#00FF00",
         lineWidth: 5
       });
       drawLandmarks(canvasCtx, landmarks, { color: "#FF0000", lineWidth: 2 });
       const {center, diff} = getCenterBetweenIndexAndThumb(landmarks, canvas);
-      const radius = (glMatrix.vec3.length(diff))/2
-      if (radius > 100 && !handSpamPreventionFlags[index]) {
+      const radius = (glMatrix.vec3.length(diff))/2;
+      const normalizedRadius = radius / landmarkAverages;
+      const bigEnough = normalizedRadius > settings.sizeThreshold;
+      console.log('what are sizes', {bigEnough, radius, landmarkAverages, normalizedRadius});
+      if (bigEnough && !handSpamPreventionFlags[index]) {
         window.spawnParticlesAtPosition(center);
         handSpamPreventionFlags[index] = true;
-      } else if (radius <= 100) {
+      } else if (!bigEnough) {
         handSpamPreventionFlags[index] = false;
       }
-      console.log('what is handParticleFlags', handSpamPreventionFlags);
-      console.log('what is radius, diff, center, landmarks[4], landmarks[8]', radius, diff, center, landmarks[4], landmarks[8]);
-      canvasCtx.beginPath();
-      canvasCtx.arc(center[0], center[1], radius, 0, 2 * Math.PI);
-      canvasCtx.fillStyle = '#ffffff76';
-      canvasCtx.fill();
-      canvasCtx.beginPath();
-      canvasCtx.fillStyle = '#07043a';
-      canvasCtx.fillRect(center[0] - 5, center[1] - 5, 10, 10);
-      canvasCtx.fill();
+      // console.log('what is handParticleFlags', handSpamPreventionFlags);
+      // console.log('what is radius, diff, center, landmarks[4], landmarks[8]', radius, diff, center, landmarks[4], landmarks[8]);
+      if (settings.debugCircle) {
+        canvasCtx.beginPath();
+        canvasCtx.arc(center[0], center[1], radius, 0, 2 * Math.PI);
+        canvasCtx.fillStyle = '#ffffff76';
+        canvasCtx.fill();
+        canvasCtx.beginPath();
+        canvasCtx.fillStyle = '#07043a';
+        canvasCtx.fillRect(center[0] - 5, center[1] - 5, 10, 10);
+        canvasCtx.fill();
+      }
     }
   }
+}
   canvasCtx.restore();
 
   // Call this function again to keep predicting when the browser is ready.
