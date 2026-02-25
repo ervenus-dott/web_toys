@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            background-color: rgb(48, 38, 38);
+        }
+
+        button {
+            position: absolute;
+            width: 100px;
+            height: 20px;
+            top: 0;
+            bottom: 0;
+            margin: auto;
+        }
+
+        .petal {
+            position: relative;
+            height: 200px;
+            width: 100px;
+            border-radius: 50%;
+            /* background-color: pink; */
+            outline: 4px solid pink;
+            box-sizing: border-box;
+        }
+        @keyframes unfold {
+            0% {
+                    transform: rotate(180deg);
+            }
+            100% {
+                    transform: rotate(90deg);
+            }
+        }
+
+        .petal-holder {
+            position: absolute;
+            width: 100%;
+            height: 0;
+            top: 0;
+            right: 0;
+            transform: rotate(180deg);
+            /* animation: unfold 2s infinite; */
+            animation-name: unfold;
+            animation-duration: 2s;
+            animation-fill-mode: forwards;
+            /* animation-iteration-count: 1; */
+            animation-timing-function: ease;
+        }
+        .petal-holder.o-0 {
+            animation-delay: 0.5s;
+        }
+        .petal-holder.o-1 {
+            animation-delay: 2s;
+        }
+        .petal-holder.o-2 {
+            animation-delay: 3.5s;
+        }
+        .petal-holder .petal {
+            bottom: 200px;
+        }
+        body > .petal {
+            position: fixed;
+            top: calc(50% - 100px);
+            left: calc(50% - 150px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="petal">
+        <button>click me!</button>
+        <div class="petal-holder o-0">
+            <div class="petal">
+                <button>click me!</button>
+                <div class="petal-holder o-1">
+                    <div class="petal">
+                        <button>click me!</button>
+                        <div class="petal-holder o-2">
+                            <div class="petal">
+                                <button>click me!</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
